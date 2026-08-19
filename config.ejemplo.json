@@ -1,0 +1,6 @@
+{
+  "proveedor": "gemini",
+  "api_key": "PEGA-AQUI-TU-API-KEY",
+  "modelo": "gemini-3.6-flash",
+  "modelo_rapido": "gemini-3.5-flash"
+}

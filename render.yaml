@@ -1,0 +1,15 @@
+# Despliegue en Render (https://render.com) - plan gratis.
+# La API key NO va aca: se pone en el panel de Render como variable de
+# entorno GEMINI_API_KEY, e ia.py la lee de ahi antes que de config.json.
+services:
+  - type: web
+    name: quecocino
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python servidor.py"
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12"

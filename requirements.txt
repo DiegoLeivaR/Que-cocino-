@@ -1,0 +1,2 @@
+# Sin dependencias: todo el proyecto usa la libreria estandar de Python.
+# El archivo existe porque los servicios de hosting lo buscan.
