@@ -17,6 +17,7 @@ import os
 import socket
 import socketserver
 import threading
+import time
 import webbrowser
 
 import ia
@@ -58,6 +59,23 @@ def ip_local():
 
 
 
+# PIN de acceso. Vacio = sin candado (asi corre en tu casa).
+# En un hosting publico se pone la variable ACCESO_PIN y sin ese PIN nadie
+# puede usar la IA: es lo unico que separa tu cuota de todo internet.
+PIN = os.environ.get("ACCESO_PIN", "").strip()
+
+_intentos = {}  # ip -> [momentos de peticion], para frenar abusos
+
+
+def _muy_seguido(ip, limite=30, ventana=600):
+    """True si esa IP paso el limite de peticiones en los ultimos 10 minutos."""
+    ahora = time.time()
+    marcas = [t for t in _intentos.get(ip, []) if ahora - t < ventana]
+    marcas.append(ahora)
+    _intentos[ip] = marcas
+    return len(marcas) > limite
+
+
 class App(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -73,6 +91,24 @@ class App(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if not self.path.startswith("/api/"):
             return self.send_error(404)
+
+        # /api/entrar solo dice si el PIN es correcto; no gasta cuota de IA
+        if self.path == "/api/entrar":
+            largo = int(self.headers.get("Content-Length", 0))
+            try:
+                pin = json.loads(self.rfile.read(largo).decode("utf-8")).get("pin", "")
+            except Exception:
+                pin = ""
+            return self._responder(200, {"ok": (not PIN) or pin == PIN,
+                                         "hace_falta": bool(PIN)})
+
+        if PIN and self.headers.get("X-Pin", "") != PIN:
+            return self._responder(401, {"error": "PIN incorrecto o vencido."})
+
+        ip = self.headers.get("X-Forwarded-For", self.client_address[0]).split(",")[0]
+        if _muy_seguido(ip):
+            return self._responder(429, {
+                "error": "Demasiadas peticiones seguidas. Espera unos minutos."})
 
         largo = int(self.headers.get("Content-Length", 0))
         try:
@@ -138,6 +174,24 @@ class Servidor(socketserver.ThreadingTCPServer):
     daemon_threads = True
 
 
+def refrescar_cada_dia():
+    """Vuelve a bajar los precios una vez al dia.
+
+    En tu maquina corres actualizar.py cuando quieres. En un hosting no hay
+    nadie que lo haga, y unos precios de hace tres semanas son peores que no
+    tener precios: se ven igual de confiables pero ya no lo son.
+    """
+    import actualizar
+    while True:
+        time.sleep(24 * 3600)
+        try:
+            r = actualizar.generar(hablar=False)
+            print("  precios actualizados: %s (%d productos)"
+                  % (r["fecha"], r["productos"]))
+        except Exception as e:
+            print("  no pude actualizar precios:", e)
+
+
 if __name__ == "__main__":
     if not os.path.exists("precios.json"):
         raise SystemExit("Falta precios.json. Corre primero:  python actualizar.py")
@@ -166,13 +220,16 @@ if __name__ == "__main__":
             print("Desde tu celular  :  http://%s:%d/index.html" % (ip, PUERTO))
             print("  (mismo wifi. Mientras corre, cualquiera en tu red puede")
             print("   abrirla y gastar tu cuota de IA. Cortala cuando termines.)")
+        print("Acceso con PIN:" , "SI" if PIN else "no (abierto a tu red)")
         if hay_key:
             print("IA conectada (config.json encontrado)")
         else:
             print("SIN IA: falta config.json. La app funciona igual,")
             print("        pero la foto no se va a analizar.")
         print("Ctrl+C para cortar.\n")
-        if not en_hosting:
+        if en_hosting:
+            threading.Thread(target=refrescar_cada_dia, daemon=True).start()
+        else:
             threading.Timer(0.6, lambda: webbrowser.open(url)).start()
         try:
             httpd.serve_forever()

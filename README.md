@@ -53,22 +53,46 @@ Dos advertencias reales:
   Gemini. En tu casa no importa; en el wifi de la universidad, sí. Córtalo con
   `Ctrl+C` al terminar.
 
-### Opción completa: desplegarlo
+### Opción completa: desplegarlo en Render
 
-Para entrar desde cualquier lado hace falta un hosting que ejecute Python
-(Render, Railway, Fly.io). El repo ya trae `render.yaml` listo.
+Para entrar desde cualquier lado hace falta un hosting que **ejecute Python**.
 
-En Render: conectas este repositorio, y en **Environment** agregas
-`GEMINI_API_KEY` con tu clave. `ia.py` lee esa variable antes que
-`config.json`, así que la clave nunca toca el repo.
+**Por qué Render y no Vercel/Netlify:** sus funciones serverless cortan a los
+10 segundos y la llamada de visión tarda entre 13 y 23. Te cortaría siempre.
 
-Antes de desplegar, piensa esto: **la URL sería pública y la cuota es tuya**.
-El plan gratis de Gemini da 1500 requests al día; si alguien encuentra la
-dirección, se la gasta. Para una prueba entre tú y tus amigos está bien, pero
-no lo dejes corriendo y olvidado.
+Pasos:
 
-Ojo también: los precios que se despliegan son los del último `actualizar.py`
-que hayas corrido y subido. En el hosting no se refrescan solos.
+1. Sube el repo a GitHub (privado sirve igual).
+2. En [render.com](https://render.com) → **New → Web Service** → conecta el repo.
+   El `render.yaml` ya está, así que detecta la configuración solo.
+3. En **Environment** agrega dos variables:
+
+   | Variable | Valor |
+   |---|---|
+   | `GEMINI_API_KEY` | tu clave de AI Studio |
+   | `ACCESO_PIN` | un PIN que te inventes, ej. `4821` |
+
+`ia.py` lee `GEMINI_API_KEY` antes que `config.json`, así que la clave nunca
+toca el repositorio.
+
+**El plan gratis duerme** tras 15 minutos sin uso: el primer acceso tarda ~50
+segundos en despertar. Para que esté siempre listo son unos $7 al mes.
+
+### El PIN no es decoración
+
+Sin `ACCESO_PIN`, tu URL pública deja que **cualquiera gaste tus 1500 requests
+diarios**. Con la variable puesta:
+
+- La app pide el PIN una vez y lo guarda en el navegador.
+- Toda llamada a la IA sin el PIN correcto responde 401.
+- Además hay un tope de 30 peticiones cada 10 minutos por IP.
+
+En tu casa no pongas la variable y no verás ninguna pantalla de PIN.
+
+### Los precios se refrescan solos en el hosting
+
+Cuando corre desplegado, un hilo vuelve a bajar precios una vez al día. En tu
+máquina no: ahí corres `actualizar.py` cuando quieras.
 
 ## Conectar la IA
 

@@ -209,11 +209,39 @@
   .vapor2{animation:vapor 2.6s ease-in-out infinite .5s}
   @keyframes vapor{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:.9;transform:translateY(-3px)}}
 
+  /* candado de acceso (solo aparece si el servidor tiene ACCESO_PIN) */
+  .candado{position:fixed;inset:0;z-index:50;background:var(--papel);
+    display:none;place-items:center;padding:20px}
+  .candado.abierto{display:grid}
+  .candado .caja{background:var(--crema);border:2px solid var(--tinta);
+    border-radius:26px 22px 27px 21px;padding:26px 22px;max-width:340px;width:100%;
+    text-align:center;box-shadow:4px 5px 0 var(--sombra)}
+  .candado h2{font-family:var(--display);font-weight:600;font-size:1.3rem;margin:0 0 6px}
+  .candado p{font-size:.83rem;color:var(--suave);margin:0 0 16px}
+  .candado input{width:100%;font-family:var(--display);font-size:1.4rem;font-weight:600;
+    text-align:center;letter-spacing:.28em;padding:12px;border:2px solid var(--tinta);
+    border-radius:16px 13px 17px 12px;background:var(--papel);color:var(--tinta)}
+  .candado .mal{color:#b03a22;font-size:.8rem;font-weight:700;margin-top:10px;display:none}
+  .candado .mal.ver{display:block}
+
   :focus-visible{outline:3px solid var(--aji);outline-offset:2px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div class="candado" id="candado">
+  <div class="caja">
+    <h2>¿Cuál es el PIN?</h2>
+    <p>Esta app usa una cuota limitada de IA, por eso pide clave.</p>
+    <input type="password" id="pin" inputmode="numeric" autocomplete="off"
+           placeholder="••••" maxlength="24">
+    <button class="btn" id="entrar" style="margin-top:14px">
+      <span>Entrar</span>
+    </button>
+    <div class="mal" id="pinMal">PIN incorrecto</div>
+  </div>
+</div>
+
 <div class="wrap">
 
 <header>
@@ -322,6 +350,19 @@
 <script src="recetas.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+
+/* Un unico punto de salida al servidor, para que el PIN viaje siempre y no
+   haya que acordarse de ponerlo en cada llamada. */
+let PIN_GUARDADO = localStorage.getItem("quecocino_pin") || "";
+async function pedirAPI(ruta, cuerpo) {
+  const res = await fetch(ruta, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Pin": PIN_GUARDADO },
+    body: JSON.stringify(cuerpo),
+  });
+  if (res.status === 401) { mostrarCandado(); throw new Error("Necesitas el PIN."); }
+  return res.json();
+}
 
 const ICO = {
   reloj:'<circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3 1.8"/>',
@@ -436,12 +477,8 @@ async function pedirRecetas() {
   est.innerHTML = ico("cargando","ico girando") +
     '<div><span class="puntos">Buscando platos para lo que tienes</span></div>';
   try {
-    const res = await fetch("/api/recetas", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ tengo:[...tengo], dificultad:dif,
-                             presupuesto:NIVELES[nivel].max, extras })
-    });
-    const d = await res.json();
+    const d = await pedirAPI("/api/recetas", { tengo:[...tengo], dificultad:dif,
+                             presupuesto:NIVELES[nivel].max, extras });
     if (d.error) throw new Error(d.error);
     if (!d.recetas || !d.recetas.length) throw new Error("No devolvió recetas. Prueba otra vez.");
     recetas = d.recetas;
@@ -530,15 +567,11 @@ $("#out").onclick = async e => {
   b.disabled = true; b.querySelector("span").textContent = "Pensando…";
   b.querySelector(".ico").outerHTML = ico("cargando","ico girando");
   try {
-    const res = await fetch("/api/explicar", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        receta:r.nombre, dificultad:dif, presupuesto:NIVELES[nivel].t,
-        tengo:r.det.filter(d => d.lo_tengo).map(d => d.ing),
-        falta:r.det.filter(d => !d.lo_tengo),
-      })
+    const d = await pedirAPI("/api/explicar", {
+      receta:r.nombre, dificultad:dif, presupuesto:NIVELES[nivel].t,
+      tengo:r.det.filter(d => d.lo_tengo).map(d => d.ing),
+      falta:r.det.filter(d => !d.lo_tengo),
     });
-    const d = await res.json();
     if (d.error) throw new Error(d.error);
     caja.innerHTML = md(d.texto);
     caja.style.display = "block";
@@ -594,11 +627,7 @@ async function analizar(b64, urlVista) {
   est.className = "estado trabajando";
   est.innerHTML = ico("ojo") + '<div><span class="puntos">Mirando tu foto</span></div>';
   try {
-    const res = await fetch("/api/ver", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ imagen:b64, mime:"image/jpeg" })
-    });
-    const d = await res.json();
+    const d = await pedirAPI("/api/ver", { imagen:b64, mime:"image/jpeg" });
     if (d.error) throw new Error(d.error);
 
     for (const e of (d.extras || [])) { extras[e.nombre] = e.mercado; tengo.add(e.nombre); }
@@ -701,6 +730,33 @@ $("#disparar").onclick = () => {
   analizar(b64, url);
 };
 
+
+/* ---------- candado ---------- */
+function mostrarCandado() { $("#candado").classList.add("abierto"); $("#pin").focus(); }
+
+async function comprobarPin(pin) {
+  const r = await (await fetch("/api/entrar", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ pin })
+  })).json();
+  return r.ok;
+}
+
+$("#entrar").onclick = async () => {
+  const v = $("#pin").value.trim();
+  if (await comprobarPin(v)) {
+    PIN_GUARDADO = v;
+    localStorage.setItem("quecocino_pin", v);
+    $("#candado").classList.remove("abierto");
+  } else {
+    $("#pinMal").classList.add("ver");
+    $("#pin").value = ""; $("#pin").focus();
+  }
+};
+$("#pin").addEventListener("keydown", e => { if (e.key === "Enter") $("#entrar").click(); });
+
+// si el servidor no pide PIN (tu casa), esto no se ve nunca
+comprobarPin(PIN_GUARDADO).then(ok => { if (!ok) mostrarCandado(); });
 
 pintaRegleta();
 render();
