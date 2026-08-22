@@ -132,7 +132,7 @@ def main():
         if con_super:
             factores = [s / r for _, s, r in con_super]
             f = statistics.median(factores)
-            print("\nEl supuesto del 20%%")
+            print("\nEl supuesto del 20%")
             print("  super / mercado real:  x%.2f  (yo asumia x1.20)" % f)
             if abs(f - 1.20) > 0.15:
                 print("  -> hay que cambiar FACTOR_SUPER en plazavea.py a %.2f" % f)
