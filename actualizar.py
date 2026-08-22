@@ -83,6 +83,19 @@ def generar(hablar=True):
             p["mercado"] = estimado
             p["fuente"] = "estimado"
 
+    # Los precios que dio una persona que compra en el mercado mandan sobre
+    # cualquier estimacion nuestra. Se cargan con calibrar.py.
+    reales_path = os.path.join(AQUI, "precios-reales.json")
+    n_reales = 0
+    if os.path.exists(reales_path):
+        with io.open(reales_path, encoding="utf-8") as f:
+            reales = json.load(f).get("kilo", {})
+        for nombre, v in reales.items():
+            if nombre in prods and str(v.get("unidad", "")).startswith("kil"):
+                prods[nombre]["mercado"] = round(float(v["precio"]), 2)
+                prods[nombre]["fuente"] = "mercado"
+                n_reales += 1
+
     salida = {
         "fecha": d["fecha"],
         "margen_tipico": margen_tipico,
@@ -106,6 +119,8 @@ def generar(hablar=True):
     di("  Productos:          %d  (%d con precio de super, %d estimados)"
        % (len(prods), con_super, len(prods) - con_super))
     di("  Margen mayorista -> mercado: x%.2f  (mediano observado)" % margen_tipico)
+    if n_reales:
+        di("  Precios verificados en el mercado (mandan sobre todo): %d" % n_reales)
     if descartados:
         di("  Descartados por dar menos que el mayorista: %s" % ", ".join(descartados))
     di("\nGenerados: precios.json y precios.js")
