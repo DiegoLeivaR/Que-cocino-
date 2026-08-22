@@ -47,7 +47,7 @@ modelo = input("Modelo [%s]: " % modelo_def).strip() or modelo_def
 
 with io.open(CONFIG, "w", encoding="utf-8") as f:
     json.dump({"proveedor": proveedor, "api_key": clave, "modelo": modelo,
-           "modelo_rapido": "gemini-3.5-flash" if proveedor == "gemini"
+           "modelo_rapido": "gemini-3.5-flash-lite" if proveedor == "gemini"
                             else "gpt-4.1-mini"},
               f, ensure_ascii=False, indent=1)
 

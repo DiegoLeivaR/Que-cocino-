@@ -191,6 +191,29 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   display:block;font-variant-numeric:tabular-nums}
 .pcosto span{font-size:11px;color:var(--gris);display:block;margin-top:1px}
 .pcosto.pasa b{color:var(--mal)}
+/* corazon: guardar un plato para volver aunque cambies los filtros */
+.like{margin:8px 0 0 auto;width:38px;height:38px;display:grid;place-items:center;
+  border:0;background:none;color:var(--linea);cursor:pointer;border-radius:50%;
+  transition:transform .18s var(--emph),color .18s}
+.like svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.like.on{color:#e0334d}
+.like.on svg{fill:currentColor}
+.like:active{transform:scale(.82)}
+@keyframes latido{0%{transform:scale(1)}30%{transform:scale(1.35)}
+  55%{transform:scale(.92)}100%{transform:scale(1)}}
+.like.late{animation:latido .45s var(--emph)}
+
+.guard{position:relative;width:40px;height:40px;border:0;background:none;
+  color:var(--tinta);border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.guard:active{background:var(--linea2)}
+.guard svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.guard.hay svg{fill:#e0334d;stroke:#e0334d}
+.guard .globo{position:absolute;top:1px;right:-1px;min-width:17px;height:17px;
+  padding:0 4px;background:#e0334d;color:#fff;border-radius:9px;font-size:10.5px;
+  font-weight:700;display:none;place-items:center;line-height:1}
+.guard.hay .globo{display:grid}
 .ings{margin-top:14px;padding-top:13px;border-top:1px solid var(--linea2)}
 .ing{display:flex;justify-content:space-between;align-items:center;gap:10px;
   padding:4px 0;font-size:13.5px}
@@ -285,6 +308,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
     <h1 id="titulo">Qué cocino hoy</h1>
     <span id="fuente">cargando…</span>
   </div>
+  <button class="guard" id="btnGuard" aria-label="Tus guardados">
+    <svg viewBox="0 0 24 24"><path d="M12 20.4s-7.7-4.7-7.7-10a4.35 4.35 0 0 1 7.7-2.8 4.35 4.35 0 0 1 7.7 2.8c0 5.3-7.7 10-7.7 10z"/></svg>
+    <span class="globo" id="nGuard">0</span>
+  </button>
 </div>
 <div class="pasos">
   <div class="tramo hecho" id="t1"><i></i></div>
@@ -391,6 +418,21 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div id="salida"></div>
 </section>
 
+<!-- ====== GUARDADOS · no es un paso, es un cajón siempre disponible ===== -->
+<section class="pantalla" id="p4">
+  <div class="encab">
+    <svg class="dibujo" viewBox="0 0 76 76">
+      <path class="calido" d="M38 61S13.5 45.4 13.5 29.2A13.6 13.6 0 0 1 38 20.4a13.6 13.6 0 0 1 24.5 8.8C62.5 45.4 38 61 38 61z"/>
+    </svg>
+    <div class="txt">
+      <h2 class="tit">Tus guardados</h2>
+      <p class="baja">Los platos que te gustaron. Los precios se recalculan
+         solos con los de hoy y con lo que tengas en casa.</p>
+    </div>
+  </div>
+  <div id="salidaGuard"></div>
+</section>
+
 </main>
 
 <div class="barra">
@@ -447,6 +489,10 @@ const COMUNES = ["Papa","Cebolla","Arroz","Huevos","Pollo","Tomate","Ajo",
 
 let tengo = new Set(), dif = "media", nivel = 1, extras = {};
 let recetas = [], ultimas = [], paso = 1;
+// Los guardados viven en el navegador: si juegas con los filtros y pierdes
+// de vista el plato que te gusto, sigue estando aca.
+let guardados = JSON.parse(localStorage.getItem("quecocino_likes") || "[]");
+let guardadas = [], antesDeGuardados = 1;
 
 const precio = n => extras[n] ?? (PRECIOS.productos[n] || {}).mercado ?? null;
 const TODOS = Object.keys(PRECIOS.productos).sort();
@@ -462,13 +508,15 @@ function irA(n, atras) {
     s.classList.remove("va-der","va-izq");
     if (i === n-1) s.classList.add(atras ? "va-izq" : "va-der");
   });
-  [1,2,3].forEach(i => $("#t"+i).classList.toggle("hecho", i <= n));
+  // la 4 es el cajon de guardados: no avanza la barra de pasos
+  [1,2,3].forEach(i => $("#t"+i).classList.toggle("hecho", n !== 4 && i <= n));
   $("#atras").classList.toggle("ver", n > 1);
-  $("#titulo").textContent = ["Qué cocino hoy","Tu antojo","A cocinar"][n-1];
+  $("#titulo").textContent =
+    ["Qué cocino hoy","Tu antojo","A cocinar","Tus guardados"][n-1];
   window.scrollTo({top:0, behavior:"instant"});
   pintaBarra();
 }
-$("#atras").onclick = () => irA(paso-1, true);
+$("#atras").onclick = () => irA(paso === 4 ? antesDeGuardados : paso - 1, true);
 
 function pintaBarra() {
   const b = $("#accion"), c = $("#cuenta");
@@ -484,10 +532,16 @@ function pintaBarra() {
     b.textContent = "Buscar recetas";
     b.classList.add("oro");
     b.onclick = () => { irA(3); pedirRecetas(); };
-  } else {
+  } else if (paso === 3) {
     c.innerHTML = recetas.length ? "¿Nada te convence? Cambia y te busco otras" : "";
     b.textContent = "Cambiar y buscar otras";
     b.onclick = () => irA(2, true);
+  } else {
+    const n = guardados.length;
+    c.innerHTML = n ? `<b>${n}</b> plato${n>1?"s":""} guardado${n>1?"s":""}`
+                    : "Dale al corazón de un plato para guardarlo";
+    b.textContent = "Volver";
+    b.onclick = () => irA(antesDeGuardados, true);
   }
 }
 
@@ -593,31 +647,40 @@ async function pedirRecetas() {
   pintaBarra();
 }
 
-function render() {
-  ultimas = recetas.map(r => {
-    let falta = 0, total = 0, det = [];
-    for (const [n, kg] of Object.entries(r.ing)) {
-      const p = precio(n); if (p === null) continue;
-      const c = p * kg; total += c;
-      const hay = tengo.has(n);
-      if (!hay) falta += c;
-      det.push({n, kg, c, hay});
-    }
-    det.sort((a,b) => b.c - a.c);
-    return {...r, falta, total, det};
-  }).sort((a,b) => a.falta - b.falta);
+function costear(r) {
+  let falta = 0, total = 0, det = [];
+  for (const [n, kg] of Object.entries(r.ing)) {
+    const p = precio(n); if (p === null) continue;
+    const c = p * kg; total += c;
+    const hay = tengo.has(n);
+    if (!hay) falta += c;
+    det.push({n, kg, c, hay});
+  }
+  det.sort((a,b) => b.c - a.c);
+  return {...r, falta, total, det};
+}
 
+const guardado = nom => guardados.some(g => g.nombre === nom);
+
+/* La misma tarjeta sirve para los resultados y para los guardados. El `pre`
+   distingue los ids ("g" para guardados) porque las dos listas conviven. */
+function tarjeta(r, k, pre) {
   const tope = NIVELES[nivel].max;
-  $("#salida").innerHTML = ultimas.length ? ultimas.map((r,k) => `
-    <article class="plato">
+  return `<article class="plato">
       <div class="pcab">
         <div>
           <h3 class="pnom">${r.nombre}</h3>
           <div class="pmin">${ic("reloj","i s")} ${r.min} min</div>
         </div>
-        <div class="pcosto ${r.falta>tope?"pasa":""}">
-          <b>S/ ${r.falta.toFixed(2)}</b>
-          <span>${r.falta>tope ? "pasa tu tope" : "te falta comprar"}</span>
+        <div>
+          <div class="pcosto ${r.falta>tope?"pasa":""}">
+            <b>S/ ${r.falta.toFixed(2)}</b>
+            <span>${r.falta>tope ? "pasa tu tope" : "te falta comprar"}</span>
+          </div>
+          <button class="like ${guardado(r.nombre)?"on":""}" data-nom="${r.nombre}"
+                  aria-label="Guardar este plato">
+            <svg viewBox="0 0 24 24"><path d="M12 20.4s-7.7-4.7-7.7-10a4.35 4.35 0 0 1 7.7-2.8 4.35 4.35 0 0 1 7.7 2.8c0 5.3-7.7 10-7.7 10z"/></svg>
+          </button>
         </div>
       </div>
       <div class="ings">
@@ -626,12 +689,60 @@ function render() {
           <div class="val">${d.hay ? "lo tienes" : "S/ "+d.c.toFixed(2)}</div></div>`).join("")}
         ${r.extra?.length ? `<div class="falta">Además necesitas: ${r.extra.join(", ")}</div>` : ""}
       </div>
-      <button class="bcomo" data-k="${k}">${ic("libro","i s")} Enséñame a hacerlo</button>
-      <div class="carga" id="carga${k}"></div>
-      <div class="receta" id="rec${k}"></div>
-    </article>`).join("")
+      <button class="bcomo" data-k="${pre}${k}">${ic("libro","i s")} Enséñame a hacerlo</button>
+      <div class="carga" id="carga${pre}${k}"></div>
+      <div class="receta" id="rec${pre}${k}"></div>
+    </article>`;
+}
+
+function render() {
+  ultimas = recetas.map(costear).sort((a,b) => a.falta - b.falta);
+  $("#salida").innerHTML = ultimas.length
+    ? ultimas.map((r,k) => tarjeta(r,k,"")).join("")
     : `<div class="nada">Con eso no me sale nada.<br>Sube un poco el presupuesto o marca más ingredientes.</div>`;
 }
+
+function renderGuardados() {
+  guardadas = guardados.map(costear).sort((a,b) => a.falta - b.falta);
+  $("#salidaGuard").innerHTML = guardadas.length
+    ? guardadas.map((r,k) => tarjeta(r,k,"g")).join("")
+    : `<div class="nada">Todavía no guardaste ninguno.<br>
+       Dale al corazón de un plato que te guste y lo encuentras acá.</div>`;
+  pintaGuard();
+}
+
+function pintaGuard() {
+  $("#btnGuard").classList.toggle("hay", guardados.length > 0);
+  $("#nGuard").textContent = guardados.length;
+}
+
+/* El corazon funciona igual en resultados y en guardados. */
+document.addEventListener("click", e => {
+  const b = e.target.closest(".like"); if (!b) return;
+  const nom = b.dataset.nom;
+  const i = guardados.findIndex(g => g.nombre === nom);
+  if (i >= 0) {
+    guardados.splice(i, 1);
+    b.classList.remove("on");
+  } else {
+    const r = [...ultimas, ...guardadas].find(x => x.nombre === nom);
+    if (r) guardados.push({nombre: r.nombre, min: r.min, ing: r.ing,
+                           extra: r.extra || [], dif: r.dif || dif});
+    b.classList.add("on", "late");
+    setTimeout(() => b.classList.remove("late"), 500);
+  }
+  localStorage.setItem("quecocino_likes", JSON.stringify(guardados));
+  pintaGuard();
+  if (paso === 4) renderGuardados();
+  if (paso !== 4) pintaBarra();
+});
+
+$("#btnGuard").onclick = () => {
+  if (paso === 4) return irA(antesDeGuardados, true);
+  antesDeGuardados = paso;
+  renderGuardados();
+  irA(4);
+};
 
 /* ---------------- explicacion, con carga por etapas ---------------- */
 const ETAPAS = [
@@ -641,15 +752,18 @@ const ETAPAS = [
   "Y un truquito para que salga rico…",
 ];
 
-$("#salida").addEventListener("click", async e => {
+document.addEventListener("click", async e => {
   const b = e.target.closest(".bcomo"); if (!b) return;
-  const k = +b.dataset.k, r = ultimas[k];
-  const carga = $("#carga"+k), rec = $("#rec"+k);
+  // el id trae "g" adelante cuando la tarjeta es de guardados
+  const id = b.dataset.k, esGuard = id.startsWith("g");
+  const r = (esGuard ? guardadas : ultimas)[+(esGuard ? id.slice(1) : id)];
+  if (!r) return;
+  const carga = $("#carga"+id), rec = $("#rec"+id);
 
   b.disabled = true;
   carga.className = "carga ver";
   carga.innerHTML = `<div class="riel"><i></i></div>
-    <div class="etapa" id="et${k}">${ETAPAS[0]}</div>
+    <div class="etapa" id="et${id}">${ETAPAS[0]}</div>
     <div class="hueso"></div><div class="hueso c2"></div><div class="hueso c3"></div>
     <div class="hueso c4"></div><div class="hueso c5"></div>`;
 
@@ -657,7 +771,7 @@ $("#salida").addEventListener("click", async e => {
   let i = 0;
   const reloj = setInterval(() => {
     i = (i + 1) % ETAPAS.length;
-    const et = $("#et"+k);
+    const et = $("#et"+id);
     if (et) { et.style.opacity = 0; setTimeout(() => {
       et.textContent = ETAPAS[i]; et.style.opacity = 1; }, 180); }
   }, 3800);
@@ -774,6 +888,7 @@ verPin(PIN_GUARDADO).then(ok => { if (!ok) { $("#candado").classList.add("ver");
 
 pintaDespensa();
 pintaPlata();
+pintaGuard();
 irA(1);
 </script>
 </body>

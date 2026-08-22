@@ -66,6 +66,11 @@ PIN = os.environ.get("ACCESO_PIN", "").strip()
 
 _intentos = {}  # ip -> [momentos de peticion], para frenar abusos
 
+# Misma busqueda = misma respuesta, sin volver a pagar cuota. La idea es que
+# el usuario juegue con los filtros, y volver a una combinacion ya vista es
+# lo mas natural del mundo.
+_cache_recetas = {}
+
 
 def _muy_seguido(ip, limite=30, ventana=600):
     """True si esa IP paso el limite de peticiones en los ultimos 10 minutos."""
@@ -151,10 +156,22 @@ class App(http.server.SimpleHTTPRequestHandler):
                 # los extras vienen de la foto (queso, pan...) con precio real
                 for k, v in (datos.get("extras") or {}).items():
                     precios[k] = float(v)
+                clave = json.dumps([sorted(datos.get("tengo", [])),
+                                    datos.get("dificultad"),
+                                    datos.get("presupuesto"),
+                                    sorted((datos.get("extras") or {}).keys())],
+                                   ensure_ascii=False)
+                if clave in _cache_recetas:
+                    print("     (de cache, sin gastar cuota)")
+                    return self._responder(200, {"recetas": _cache_recetas[clave]})
+
                 r = ia.sugerir_recetas(
                     datos.get("tengo", []), datos.get("dificultad", "media"),
                     datos.get("presupuesto", 30), precios,
                 )
+                _cache_recetas[clave] = r
+                if len(_cache_recetas) > 60:
+                    _cache_recetas.pop(next(iter(_cache_recetas)))
                 print("     %s" % ", ".join(x["nombre"] for x in r))
                 return self._responder(200, {"recetas": r})
 

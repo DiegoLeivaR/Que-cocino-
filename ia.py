@@ -60,17 +60,25 @@ def _post(url, cuerpo, headers, intentos=3):
             with urllib.request.urlopen(req, timeout=90) as r:
                 return json.loads(r.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
-            detalle = e.read().decode("utf-8", "replace")[:400]
+            detalle = e.read().decode("utf-8", "replace")[:600]
             recuperable = e.code in (429, 500, 503)
             if recuperable and intento < intentos - 1:
-                espera = 2 ** intento  # 1s, 2s, 4s...
-                print("  aviso: error %s, reintento en %ss" % (e.code, espera))
+                if e.code == 429:
+                    # La cuota gratis es POR MINUTO, asi que esperar 2 segundos
+                    # no sirve de nada. La API dice cuanto esperar; le hacemos
+                    # caso, y si no lo dice asumimos medio minuto.
+                    m = re.search(r'"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"', detalle)
+                    espera = min(float(m.group(1)) + 1, 65) if m else 30
+                else:
+                    espera = 2 ** intento
+                print("  aviso: error %s, espero %.0fs y reintento"
+                      % (e.code, espera))
                 time.sleep(espera)
                 continue
             if e.code == 429:
                 raise RuntimeError(
-                    "Pasaste la cuota gratis del momento. Espera un minuto "
-                    "y vuelve a intentar.")
+                    "Se agotó la cuota del minuto. Espera unos segundos "
+                    "y dale de nuevo.")
             if e.code == 503:
                 raise RuntimeError(
                     "El modelo esta saturado ahorita. Prueba de nuevo en un "
@@ -141,7 +149,8 @@ def _buscar_reemplazo(pedido):
     return flash[0]
 
 
-def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False):
+def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False,
+            json_estricto=False):
     """Manda prompt (y opcionalmente una imagen) al modelo. Devuelve texto.
 
     `rapido=True` usa el modelo veloz y apaga el "pensamiento" del modelo.
@@ -164,13 +173,20 @@ def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False):
             url = ("https://generativelanguage.googleapis.com/v1beta/models/"
                    "%s:generateContent?key=%s" % (m, c["api_key"]))
             cuerpo = {"contents": [{"parts": partes}]}
+            cfg = {}
             if sin_pensar:
-                cuerpo["generationConfig"] = {"thinkingConfig": {"thinkingBudget": 0}}
+                cfg["thinkingConfig"] = {"thinkingBudget": 0}
+            if json_estricto:
+                # El modelo devuelve JSON valido garantizado. Sin esto mandaba
+                # texto con comas de mas y el parseo reventaba a mitad de uso.
+                cfg["responseMimeType"] = "application/json"
+            if cfg:
+                cuerpo["generationConfig"] = cfg
             try:
                 return _post(url, cuerpo, {"Content-Type": "application/json"})
             except RuntimeError as e:
                 # hay modelos que solo funcionan pensando y rechazan apagarlo
-                if sin_pensar and "400" in str(e):
+                if cfg and "400" in str(e):
                     return _post(url, {"contents": [{"parts": partes}]},
                                  {"Content-Type": "application/json"})
                 raise
@@ -211,10 +227,21 @@ def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False):
 
 
 def _json_del_texto(txt):
-    """Los modelos suelen envolver el JSON en ```json ... ```. Lo extrae."""
+    """Saca el JSON de la respuesta, aunque venga sucio.
+
+    Los modelos a veces lo envuelven en ```json, y a veces dejan una coma
+    colgando antes de cerrar. Un usuario no tiene por que ver un error de
+    parseo por eso.
+    """
     txt = re.sub(r"^```(?:json)?|```$", "", txt.strip(), flags=re.M).strip()
     m = re.search(r"[\[{].*[\]}]", txt, re.S)
-    return json.loads(m.group(0) if m else txt)
+    crudo = m.group(0) if m else txt
+    try:
+        return json.loads(crudo)
+    except json.JSONDecodeError:
+        limpio = re.sub(r",\s*(?=[}\]])", "", crudo)   # coma colgando
+        limpio = limpio.replace("“", '"').replace("”", '"')
+        return json.loads(limpio)
 
 
 def ver_ingredientes(imagen_b64, catalogo, mime="image/jpeg"):
@@ -311,7 +338,7 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4):
            presupuesto, lista_precios, n)
     )
 
-    crudo = _json_del_texto(_llamar(prompt, rapido=True))
+    crudo = _json_del_texto(_llamar(prompt, rapido=True, json_estricto=True))
     if isinstance(crudo, dict):
         crudo = crudo.get("recetas") or crudo.get("platos") or [crudo]
 
