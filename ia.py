@@ -169,7 +169,7 @@ def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False,
         if imagen_b64:
             partes.append({"inline_data": {"mime_type": mime, "data": imagen_b64}})
 
-        def pedir(m, sin_pensar=rapido):
+        def pedir(m, sin_pensar=rapido, intentos=3):
             url = ("https://generativelanguage.googleapis.com/v1beta/models/"
                    "%s:generateContent?key=%s" % (m, c["api_key"]))
             cuerpo = {"contents": [{"parts": partes}]}
@@ -183,27 +183,42 @@ def _llamar(prompt, imagen_b64=None, mime="image/jpeg", rapido=False,
             if cfg:
                 cuerpo["generationConfig"] = cfg
             try:
-                return _post(url, cuerpo, {"Content-Type": "application/json"})
+                return _post(url, cuerpo, {"Content-Type": "application/json"},
+                             intentos=intentos)
             except RuntimeError as e:
                 # hay modelos que solo funcionan pensando y rechazan apagarlo
                 if cfg and "400" in str(e):
                     return _post(url, {"contents": [{"parts": partes}]},
-                                 {"Content-Type": "application/json"})
+                                 {"Content-Type": "application/json"},
+                                 intentos=intentos)
                 raise
 
+        # Con el modelo bueno no insistimos: si no hay cuota, mas vale caer
+        # rapido al de respaldo que hacer esperar un minuto para nada.
         try:
-            d = pedir(modelo)
+            d = pedir(modelo, intentos=(1 if not rapido else 3))
         except RuntimeError as e:
-            if "404" not in str(e):
+            texto = str(e)
+            if "404" in texto:
+                # Cuando un modelo se jubila, la API suele decir cual usar:
+                # "Please update your code to use models/gemini-3.6-flash".
+                # Le hacemos caso; si no, buscamos el flash mas nuevo.
+                sug = re.search(r"use models/([A-Za-z0-9.\-]+)", texto)
+                nuevo = sug.group(1) if sug else _buscar_reemplazo(modelo)
+                print("  aviso: '%s' no sirve -> reintento con '%s'" % (modelo, nuevo))
+                d = pedir(nuevo)
+                _cache_modelo[modelo] = nuevo   # el resto de la sesion va directo
+            elif "cuota" in texto.lower() and not rapido:
+                # El modelo bueno se quedo sin cuota del minuto. Antes esto
+                # dejaba al usuario sin nada despues de esperar un minuto.
+                # Mejor una explicacion algo menos pulida que ninguna: el
+                # modelo rapido tiene mucho mas margen en el tier gratis.
+                respaldo = c.get("modelo_rapido") or "gemini-3.5-flash-lite"
+                print("  aviso: '%s' sin cuota -> lo resuelvo con '%s'"
+                      % (modelo, respaldo))
+                d = pedir(respaldo, sin_pensar=True)
+            else:
                 raise
-            # Cuando un modelo se jubila, la API suele decir cual usar:
-            # "Please update your code to use models/gemini-3.6-flash".
-            # Le hacemos caso; si no sugiere nada, buscamos el flash mas nuevo.
-            sug = re.search(r"use models/([A-Za-z0-9.\-]+)", str(e))
-            nuevo = sug.group(1) if sug else _buscar_reemplazo(modelo)
-            print("  aviso: '%s' no sirve -> reintento con '%s'" % (modelo, nuevo))
-            d = pedir(nuevo)
-            _cache_modelo[modelo] = nuevo  # el resto de la sesion ya va directo
 
         try:
             return d["candidates"][0]["content"]["parts"][0]["text"]
