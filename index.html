@@ -229,7 +229,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
   transition:transform .12s var(--emph)}
 .bcomo:active{transform:scale(.975)}
-.bcomo:disabled{background:var(--linea);color:var(--gris)}
+.bcomo:disabled{background:var(--linea);color:var(--gris);cursor:not-allowed}
+.bcomo:disabled svg{opacity:.75}
+/* la receta ya pedida se marca distinto: no vuelve a costar nada */
+.bcomo.lista{background:var(--sup);border:1px solid var(--linea);color:var(--gris);
+  font-weight:600}
 
 /* ---------- carga de la explicacion ---------- */
 .carga{display:none;margin-top:14px}
@@ -464,6 +468,7 @@ const I = {
   alerta:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.8v5M12 16v.1"/>',
   ojo:'<path d="M2.6 12S6.4 5.9 12 5.9 21.4 12 21.4 12 17.6 18.1 12 18.1 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.9"/>',
   chevron:'<path d="M6.5 9.5 12 15l5.5-5.5"/>',
+  candado:'<rect x="5.2" y="10.6" width="13.6" height="9.6" rx="2.2"/><path d="M8.4 10.6V8.2a3.6 3.6 0 0 1 7.2 0v2.4"/>',
   libro:'<path d="M4.2 5.9a1.6 1.6 0 0 1 1.6-1.6h4.3A2 2 0 0 1 12 5.6a2 2 0 0 1 1.9-1.3h4.3a1.6 1.6 0 0 1 1.6 1.6v11.6a1.6 1.6 0 0 1-1.6 1.6h-4.3A2 2 0 0 0 12 20.4a2 2 0 0 0-1.9-1.3H5.8a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M12 5.6v14.8"/>',
 };
 const ic = (n,c="i") => `<svg class="${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
@@ -493,6 +498,38 @@ let recetas = [], ultimas = [], paso = 1;
 // de vista el plato que te gusto, sigue estando aca.
 let guardados = JSON.parse(localStorage.getItem("quecocino_likes") || "[]");
 let guardadas = [], antesDeGuardados = 1;
+
+/* Explicaciones ya pedidas. Las de esta sesion viven en memoria; las de los
+   platos guardados quedan en el navegador y sobreviven al cierre, hasta que
+   les quites el like. Pedir dos veces la misma receta no tiene sentido. */
+let explicaciones = JSON.parse(localStorage.getItem("quecocino_recetas") || "{}");
+function recordarReceta(nombre, texto) {
+  explicaciones[nombre] = texto;
+  guardarExplicaciones();
+}
+function guardarExplicaciones() {
+  // solo persistimos las de platos guardados: el resto es de la sesion
+  const vivos = new Set(guardados.map(g => g.nombre));
+  const persistir = {};
+  for (const [k, v] of Object.entries(explicaciones)) if (vivos.has(k)) persistir[k] = v;
+  localStorage.setItem("quecocino_recetas", JSON.stringify(persistir));
+}
+
+// mientras haya una llamada a la IA en vuelo, no dejamos disparar otra
+let ocupado = false;
+function marcarOcupado(v) {
+  ocupado = v;
+  document.querySelectorAll(".bcomo").forEach(b => {
+    if (b.dataset.hecho) return;
+    b.disabled = v;
+    if (v && !b.dataset.cargando) {
+      b.innerHTML = ic("candado","i s") + "<span>Espera a que termine</span>";
+    } else if (!v && !b.dataset.cargando) {
+      b.innerHTML = ic("libro","i s") + "<span>Enséñame a hacerlo</span>";
+    }
+  });
+  pintaBarra();
+}
 
 const precio = n => extras[n] ?? (PRECIOS.productos[n] || {}).mercado ?? null;
 const TODOS = Object.keys(PRECIOS.productos).sort();
@@ -547,6 +584,17 @@ function pintaBarra() {
                     : "Dale al corazón de un plato para guardarlo";
     b.textContent = "Volver";
     b.onclick = () => irA(antesDeGuardados, true);
+  }
+
+  // Mientras la IA trabaja, el boton que gasta cuota queda con candado.
+  // El de atras NO: atrapar al usuario en una pantalla es peor que el gasto,
+  // y la receta que pidio se guarda igual aunque se vaya.
+  if (ocupado && paso !== 4) {
+    b.disabled = true;
+    b.innerHTML = ic("candado","i s") + "<span>Espera, estoy escribiendo…</span>";
+    c.innerHTML = "Puedes irte hacia atrás; la receta se guarda igual";
+  } else {
+    b.disabled = false;
   }
 }
 
@@ -635,8 +683,10 @@ let yaVistas = [], ultimaFirma = "";
 const firma = () => JSON.stringify([[...tengo].sort(), dif, nivel]);
 
 async function pedirRecetas(otras) {
+  if (ocupado) return;
   if (!otras) yaVistas = [];
   ultimaFirma = firma();
+  ocupado = true; pintaBarra();
   $("#salida").innerHTML = `<div class="carga ver">
     <div class="riel"><i></i></div>
     <div class="etapa">${otras ? "Buscándote otras distintas…"
@@ -666,6 +716,7 @@ async function pedirRecetas(otras) {
       (recetas.length ? "<br>Mientras tanto, el recetario de respaldo." : "") +
       `</div></div>`);
   }
+  ocupado = false;
   pintaBarra();
 }
 
@@ -711,7 +762,11 @@ function tarjeta(r, k, pre) {
           <div class="val">${d.hay ? "lo tienes" : "S/ "+d.c.toFixed(2)}</div></div>`).join("")}
         ${r.extra?.length ? `<div class="falta">Además necesitas: ${r.extra.join(", ")}</div>` : ""}
       </div>
-      <button class="bcomo" data-k="${pre}${k}">${ic("libro","i s")} Enséñame a hacerlo</button>
+      ${explicaciones[r.nombre]
+        ? `<button class="bcomo lista" data-k="${pre}${k}" data-ver="1">
+             ${ic("libro","i s")} <span>Ver cómo se hace</span></button>`
+        : `<button class="bcomo" data-k="${pre}${k}">
+             ${ic("libro","i s")} <span>Enséñame a hacerlo</span></button>`}
       <div class="carga" id="carga${pre}${k}"></div>
       <div class="receta" id="rec${pre}${k}"></div>
     </article>`;
@@ -754,6 +809,7 @@ document.addEventListener("click", e => {
     setTimeout(() => b.classList.remove("late"), 500);
   }
   localStorage.setItem("quecocino_likes", JSON.stringify(guardados));
+  guardarExplicaciones();   // al quitar el like se va tambien su receta guardada
   pintaGuard();
   if (paso === 4) renderGuardados();
   if (paso !== 4) pintaBarra();
@@ -782,7 +838,20 @@ document.addEventListener("click", async e => {
   if (!r) return;
   const carga = $("#carga"+id), rec = $("#rec"+id);
 
+  // ya la pedimos antes: se muestra al toque, sin gastar nada
+  if (explicaciones[r.nombre]) {
+    rec.innerHTML = md(explicaciones[r.nombre]);
+    rec.classList.add("ver");
+    b.dataset.hecho = "1";
+    b.remove();
+    return;
+  }
+  if (ocupado) return;   // hay otra en vuelo
+
+  b.dataset.cargando = "1";
   b.disabled = true;
+  b.innerHTML = ic("libro","i s") + "<span>Escribiéndola…</span>";
+  marcarOcupado(true);
   carga.className = "carga ver";
   carga.innerHTML = `<div class="riel"><i></i></div>
     <div class="etapa" id="et${id}">${ETAPAS[0]}</div>
@@ -805,16 +874,22 @@ document.addEventListener("click", async e => {
       falta:r.det.filter(x => !x.hay).map(x => ({ing:x.n, kg:x.kg, costo:x.c})),
     });
     if (d.error) throw new Error(d.error);
+    recordarReceta(r.nombre, d.texto);
     rec.innerHTML = md(d.texto);
     rec.classList.add("ver");
+    b.dataset.hecho = "1";
     b.remove();
   } catch (err) {
-    b.disabled = false;
-    rec.innerHTML = `<div class="aviso mal ver">${ic("alerta")}<div>${err.message}</div></div>`;
+    const red = /failed to fetch|networkerror|load failed/i.test(err.message);
+    rec.innerHTML = `<div class="aviso mal ver">${ic("alerta")}<div>` +
+      (red ? "<b>Se cortó la conexión con el servidor.</b> Revisa que la ventana de <code>python servidor.py</code> siga abierta."
+           : err.message) + "</div></div>";
     rec.classList.add("ver");
   } finally {
     clearInterval(reloj);
     carga.classList.remove("ver");
+    delete b.dataset.cargando;
+    marcarOcupado(false);
   }
 });
 

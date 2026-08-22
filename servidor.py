@@ -181,11 +181,25 @@ class App(http.server.SimpleHTTPRequestHandler):
                 return self._responder(200, {"recetas": r})
 
             if self.path == "/api/explicar":
+                # La misma receta con los mismos ingredientes da el mismo
+                # texto. Es la llamada mas cara (~15 s), no vale repetirla.
+                clave = json.dumps([datos.get("receta"),
+                                    sorted(datos.get("tengo", [])),
+                                    sorted(x.get("ing", "") for x in
+                                           datos.get("falta", []))],
+                                   ensure_ascii=False)
+                if clave in _cache_recetas:
+                    print("  -> %s (de cache)" % datos.get("receta"))
+                    return self._responder(200, {"texto": _cache_recetas[clave]})
+
                 print("  -> explicando %s..." % datos.get("receta"))
                 txt = ia.explicar_receta(
                     datos["receta"], datos.get("tengo", []), datos.get("falta", []),
                     datos.get("presupuesto", "?"), datos.get("dificultad", "?"),
                 )
+                _cache_recetas[clave] = txt
+                if len(_cache_recetas) > 60:
+                    _cache_recetas.pop(next(iter(_cache_recetas)))
                 return self._responder(200, {"texto": txt})
 
             return self._responder(404, {"error": "ruta desconocida"})
