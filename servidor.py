@@ -16,6 +16,7 @@ import json
 import os
 import socket
 import socketserver
+import sys
 import threading
 import time
 import webbrowser
@@ -215,7 +216,44 @@ def refrescar_cada_dia():
             print("  no pude actualizar precios:", e)
 
 
+def liberar_puerto():
+    """Mata cualquier proceso que este ocupando el puerto.
+
+    Existe porque un servidor viejo sin ventana visible deja la app
+    inarrancable y no hay forma obvia de cerrarlo.
+    """
+    import subprocess
+    matados = []
+    try:
+        salida = subprocess.run(["netstat", "-ano"], capture_output=True,
+                                text=True, timeout=20).stdout
+    except Exception as e:
+        raise SystemExit("No pude revisar el puerto: %s" % e)
+
+    for linea in salida.splitlines():
+        partes = linea.split()
+        if len(partes) >= 5 and partes[-1].isdigit() and "LISTENING" in linea \
+                and partes[1].endswith(":%d" % PUERTO):
+            pid = partes[-1]
+            if pid in matados or pid == "0":
+                continue
+            subprocess.run(["taskkill", "/F", "/PID", pid],
+                           capture_output=True, timeout=20)
+            matados.append(pid)
+
+    if matados:
+        print("Cerre %d proceso(s) que tenian tomado el puerto %d."
+              % (len(matados), PUERTO))
+        print("Ahora corre:  python servidor.py")
+    else:
+        print("El puerto %d ya estaba libre." % PUERTO)
+
+
 if __name__ == "__main__":
+    if "--liberar" in sys.argv:
+        liberar_puerto()
+        raise SystemExit(0)
+
     if not os.path.exists("precios.json"):
         raise SystemExit("Falta precios.json. Corre primero:  python actualizar.py")
 
@@ -229,10 +267,13 @@ if __name__ == "__main__":
     _ocupado = (not en_hosting) and _sonda.connect_ex(("127.0.0.1", PUERTO)) == 0
     _sonda.close()
     if _ocupado:
+        # Decir solo "cierra la otra ventana" no sirve cuando el proceso viejo
+        # quedo sin ventana visible. Damos el comando que lo mata.
         raise SystemExit(
-            "Ya hay algo corriendo en el puerto %d.\n"
-            "Es casi seguro otra ventana de este mismo servidor: cierrala con\n"
-            "Ctrl+C y vuelve a intentar." % PUERTO)
+            "\nYa hay otro servidor usando el puerto %d.\n\n"
+            "Si tienes otra ventana con este servidor abierta, cierrala con Ctrl+C.\n"
+            "Si no ves ninguna, quedo un proceso colgado. Matalo con esto:\n\n"
+            "    python servidor.py --liberar\n" % PUERTO)
 
     hay_key = os.path.exists("config.json")
     with Servidor(("0.0.0.0", PUERTO), App) as httpd:

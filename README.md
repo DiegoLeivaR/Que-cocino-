@@ -11,6 +11,17 @@ python servidor.py
 
 Se abre solo en el navegador. Para cortar: `Ctrl+C`.
 
+### Si dice "ya hay otro servidor usando el puerto 8765"
+
+Quedó un proceso viejo corriendo, y a veces sin ventana visible que puedas
+cerrar. Se mata con:
+
+```powershell
+python servidor.py --liberar
+```
+
+Después vuelves a correr `python servidor.py` normalmente.
+
 Para bajar los precios del día:
 
 ```powershell
