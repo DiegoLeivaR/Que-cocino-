@@ -298,18 +298,22 @@ DIFICULTADES = {
 }
 
 
-def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4):
+def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
     """Pide n recetas peruanas al modelo, ajustadas a lo que hay y al bolsillo.
 
     Le pasamos los precios reales para que respete el presupuesto, pero el
     costo final lo calcula la web con nuestros datos: el modelo propone, los
     precios del SISAP/Plaza Vea mandan.
+
+    `evitar` son platos que ya se le mostraron al usuario. Cuando pide "otras",
+    lo que quiere es variedad, no la misma lista de nuevo.
     """
     catalogo = sorted(precios.keys())
     lista_precios = "\n".join(
         "  %s: S/ %.2f por kg" % (k, precios[k]) for k in catalogo
     )
     tiene = ", ".join(tengo) if tengo else "nada en particular"
+    evitar = [str(x) for x in (evitar or [])][-24:]
 
     prompt = (
         "Eres un cocinero peruano de casa, de esos que resuelven rico y barato.\n\n"
@@ -328,14 +332,18 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4):
         "4. Platos reales y comunes en Peru, economicos y del dia a dia.\n"
         "5. Si el plato necesita algo que no esta en la lista de precios "
         "(carne de res, sillao, queso, especias), ponlo en 'extra' como texto.\n"
-        "6. Varia: no repitas la misma base en los %d platos.\n\n"
+        "6. Varia: no repitas la misma base en los %d platos.\n"
+        "%s\n"
         "Responde SOLO con este JSON, sin texto alrededor:\n"
         '[{"nombre":"Arroz con Pollo","min":45,'
         '"ing":{"Pollo":0.8,"Arroz":0.4,"Culantro":0.1},'
         '"extra":["comino"],'
         '"pasos":"Una o dos frases de como se hace."}]'
         % (n, tiene, DIFICULTADES.get(dificultad, dificultad),
-           presupuesto, lista_precios, n)
+           presupuesto, lista_precios, n,
+           ("7. YA LE PROPUSISTE ESTOS, no los repitas ni les cambies el "
+            "nombre para colarlos: %s\n   Dale platos claramente distintos.\n"
+            % ", ".join(evitar)) if evitar else "")
     )
 
     crudo = _json_del_texto(_llamar(prompt, rapido=True, json_estricto=True))

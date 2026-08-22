@@ -157,10 +157,14 @@ class App(http.server.SimpleHTTPRequestHandler):
                 # los extras vienen de la foto (queso, pan...) con precio real
                 for k, v in (datos.get("extras") or {}).items():
                     precios[k] = float(v)
+                # Lo que ya vio: si pide otras, el cache no aplica y ademas
+                # le decimos al modelo que no repita.
+                evitar = datos.get("evitar") or []
                 clave = json.dumps([sorted(datos.get("tengo", [])),
                                     datos.get("dificultad"),
                                     datos.get("presupuesto"),
-                                    sorted((datos.get("extras") or {}).keys())],
+                                    sorted((datos.get("extras") or {}).keys()),
+                                    sorted(evitar)],
                                    ensure_ascii=False)
                 if clave in _cache_recetas:
                     print("     (de cache, sin gastar cuota)")
@@ -168,7 +172,7 @@ class App(http.server.SimpleHTTPRequestHandler):
 
                 r = ia.sugerir_recetas(
                     datos.get("tengo", []), datos.get("dificultad", "media"),
-                    datos.get("presupuesto", 30), precios,
+                    datos.get("presupuesto", 30), precios, evitar=evitar,
                 )
                 _cache_recetas[clave] = r
                 if len(_cache_recetas) > 60:

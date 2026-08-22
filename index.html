@@ -531,11 +531,16 @@ function pintaBarra() {
     c.innerHTML = `${DIFS.find(d=>d.v===dif).lb}, gastando hasta <b>S/ ${NIVELES[nivel].t}</b>`;
     b.textContent = "Buscar recetas";
     b.classList.add("oro");
-    b.onclick = () => { irA(3); pedirRecetas(); };
+    // Si vuelves aca y no cambiaste nada, pedir de nuevo tiene que darte
+    // platos distintos, no la misma lista que ya viste.
+    b.onclick = () => { const igual = firma() === ultimaFirma;
+                        irA(3); pedirRecetas(igual); };
   } else if (paso === 3) {
-    c.innerHTML = recetas.length ? "¿Nada te convence? Cambia y te busco otras" : "";
-    b.textContent = "Cambiar y buscar otras";
-    b.onclick = () => irA(2, true);
+    c.innerHTML = recetas.length
+      ? "¿Nada te convence? Te busco otras · atrás para cambiar los filtros"
+      : "";
+    b.textContent = "Buscar otras 4";
+    b.onclick = () => pedirRecetas(true);
   } else {
     const n = guardados.length;
     c.innerHTML = n ? `<b>${n}</b> plato${n>1?"s":""} guardado${n>1?"s":""}`
@@ -624,25 +629,42 @@ function pintaPlata() {
 $("#reg").oninput = e => { nivel = +e.target.value; pintaPlata(); };
 
 /* ---------------- recetas ---------------- */
-async function pedirRecetas() {
+// Todo lo que ya se le mostro. Cuando pide otras, el modelo necesita saberlo
+// o devuelve lo mismo: el usuario quiere variedad, no la misma lista.
+let yaVistas = [], ultimaFirma = "";
+const firma = () => JSON.stringify([[...tengo].sort(), dif, nivel]);
+
+async function pedirRecetas(otras) {
+  if (!otras) yaVistas = [];
+  ultimaFirma = firma();
   $("#salida").innerHTML = `<div class="carga ver">
     <div class="riel"><i></i></div>
-    <div class="etapa">Pensando qué te queda rico con eso…</div>
+    <div class="etapa">${otras ? "Buscándote otras distintas…"
+                               : "Pensando qué te queda rico con eso…"}</div>
     ${"<div class='hueso'></div><div class='hueso c2'></div><div class='hueso c3'></div>".repeat(2)}
   </div>`;
   try {
     const d = await api("/api/recetas", {
-      tengo:[...tengo], dificultad:dif, presupuesto:NIVELES[nivel].max, extras });
+      tengo:[...tengo], dificultad:dif, presupuesto:NIVELES[nivel].max,
+      extras, evitar: yaVistas });
     if (d.error) throw new Error(d.error);
     if (!d.recetas?.length) throw new Error("No devolvió recetas.");
     recetas = d.recetas;
+    yaVistas = [...new Set([...yaVistas, ...recetas.map(r => r.nombre)])];
     render();
   } catch (err) {
     recetas = (typeof RECETAS !== "undefined" ? RECETAS.filter(r => r.dif === dif) : []);
     render();
+    // "Failed to fetch" no es culpa de la IA: es que no se llego al servidor
+    const red = /failed to fetch|networkerror|load failed/i.test(err.message);
     $("#salida").insertAdjacentHTML("afterbegin",
-      `<div class="aviso mal ver">${ic("alerta")}<div><b>La IA no respondió.</b> ${err.message}
-       ${recetas.length ? "<br>Te muestro el recetario de respaldo." : ""}</div></div>`);
+      `<div class="aviso mal ver">${ic("alerta")}<div>` +
+      (red ? `<b>Se cortó la conexión con el servidor.</b><br>
+              Revisa que la ventana donde corre <code>python servidor.py</code>
+              siga abierta, y vuelve a intentar.`
+           : `<b>La IA no respondió.</b> ${err.message}`) +
+      (recetas.length ? "<br>Mientras tanto, el recetario de respaldo." : "") +
+      `</div></div>`);
   }
   pintaBarra();
 }
