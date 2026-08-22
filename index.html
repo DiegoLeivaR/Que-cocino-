@@ -520,12 +520,18 @@ let ocupado = false;
 function marcarOcupado(v) {
   ocupado = v;
   document.querySelectorAll(".bcomo").forEach(b => {
-    if (b.dataset.hecho) return;
+    if (b.dataset.hecho || b.dataset.cargando) return;  // ese es el que trabaja
     b.disabled = v;
-    if (v && !b.dataset.cargando) {
+    // Una receta ya generada no cuesta nada, asi que su boton no se bloquea
+    // ni pierde su etiqueta cuando se restaura.
+    const yaEsta = !!explicaciones[b.dataset.nom];
+    b.classList.toggle("lista", yaEsta);
+    if (v && !yaEsta) {
       b.innerHTML = ic("candado","i s") + "<span>Espera a que termine</span>";
-    } else if (!v && !b.dataset.cargando) {
-      b.innerHTML = ic("libro","i s") + "<span>Enséñame a hacerlo</span>";
+    } else {
+      b.disabled = false;
+      b.innerHTML = ic("libro","i s") +
+        `<span>${yaEsta ? "Ver cómo se hace" : "Enséñame a hacerlo"}</span>`;
     }
   });
   pintaBarra();
@@ -565,13 +571,15 @@ function pintaBarra() {
     b.textContent = "Listo, sigamos";
     b.onclick = () => irA(2);
   } else if (paso === 2) {
-    c.innerHTML = `${DIFS.find(d=>d.v===dif).lb}, gastando hasta <b>S/ ${NIVELES[nivel].t}</b>`;
-    b.textContent = "Buscar recetas";
+    // Si no cambiaste nada y ya tienes platos, volver no debe gastar cuota:
+    // para pedir otros esta el boton de la pantalla 3.
+    const mismos = recetas.length && firma() === ultimaFirma;
+    c.innerHTML = mismos
+      ? "Sin cambios · te devuelvo a los platos que ya tenías"
+      : `${DIFS.find(d=>d.v===dif).lb}, gastando hasta <b>S/ ${NIVELES[nivel].t}</b>`;
+    b.textContent = mismos ? "Ver mis platos" : "Buscar recetas";
     b.classList.add("oro");
-    // Si vuelves aca y no cambiaste nada, pedir de nuevo tiene que darte
-    // platos distintos, no la misma lista que ya viste.
-    b.onclick = () => { const igual = firma() === ultimaFirma;
-                        irA(3); pedirRecetas(igual); };
+    b.onclick = mismos ? () => irA(3) : () => { irA(3); pedirRecetas(false); };
   } else if (paso === 3) {
     c.innerHTML = recetas.length
       ? "¿Nada te convence? Te busco otras · atrás para cambiar los filtros"
@@ -586,10 +594,10 @@ function pintaBarra() {
     b.onclick = () => irA(antesDeGuardados, true);
   }
 
-  // Mientras la IA trabaja, el boton que gasta cuota queda con candado.
-  // El de atras NO: atrapar al usuario en una pantalla es peor que el gasto,
-  // y la receta que pidio se guarda igual aunque se vaya.
-  if (ocupado && paso !== 4) {
+  // El candado va SOLO en la pantalla 3, que es donde esta el boton que se
+  // puede spamear. Si tambien bloqueara la 2, irse hacia atras no serviria
+  // de nada: te dejo salir pero no hacer nada, que es lo peor de los dos.
+  if (ocupado && paso === 3) {
     b.disabled = true;
     b.innerHTML = ic("candado","i s") + "<span>Espera, estoy escribiendo…</span>";
     c.innerHTML = "Puedes irte hacia atrás; la receta se guarda igual";
@@ -686,7 +694,7 @@ async function pedirRecetas(otras) {
   if (ocupado) return;
   if (!otras) yaVistas = [];
   ultimaFirma = firma();
-  ocupado = true; pintaBarra();
+  marcarOcupado(true);
   $("#salida").innerHTML = `<div class="carga ver">
     <div class="riel"><i></i></div>
     <div class="etapa">${otras ? "Buscándote otras distintas…"
@@ -716,8 +724,7 @@ async function pedirRecetas(otras) {
       (recetas.length ? "<br>Mientras tanto, el recetario de respaldo." : "") +
       `</div></div>`);
   }
-  ocupado = false;
-  pintaBarra();
+  marcarOcupado(false);
 }
 
 function costear(r) {
@@ -762,11 +769,10 @@ function tarjeta(r, k, pre) {
           <div class="val">${d.hay ? "lo tienes" : "S/ "+d.c.toFixed(2)}</div></div>`).join("")}
         ${r.extra?.length ? `<div class="falta">Además necesitas: ${r.extra.join(", ")}</div>` : ""}
       </div>
-      ${explicaciones[r.nombre]
-        ? `<button class="bcomo lista" data-k="${pre}${k}" data-ver="1">
-             ${ic("libro","i s")} <span>Ver cómo se hace</span></button>`
-        : `<button class="bcomo" data-k="${pre}${k}">
-             ${ic("libro","i s")} <span>Enséñame a hacerlo</span></button>`}
+      <button class="bcomo ${explicaciones[r.nombre] ? "lista" : ""}"
+              data-k="${pre}${k}" data-nom="${r.nombre}">
+        ${ic("libro","i s")} <span>${explicaciones[r.nombre]
+          ? "Ver cómo se hace" : "Enséñame a hacerlo"}</span></button>
       <div class="carga" id="carga${pre}${k}"></div>
       <div class="receta" id="rec${pre}${k}"></div>
     </article>`;
@@ -777,6 +783,7 @@ function render() {
   $("#salida").innerHTML = ultimas.length
     ? ultimas.map((r,k) => tarjeta(r,k,"")).join("")
     : `<div class="nada">Con eso no me sale nada.<br>Sube un poco el presupuesto o marca más ingredientes.</div>`;
+  if (ocupado) marcarOcupado(true);   // botones recien creados: recandarlos
 }
 
 function renderGuardados() {
@@ -785,6 +792,7 @@ function renderGuardados() {
     ? guardadas.map((r,k) => tarjeta(r,k,"g")).join("")
     : `<div class="nada">Todavía no guardaste ninguno.<br>
        Dale al corazón de un plato que te guste y lo encuentras acá.</div>`;
+  if (ocupado) marcarOcupado(true);
   pintaGuard();
 }
 
