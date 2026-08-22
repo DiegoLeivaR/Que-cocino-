@@ -1,0 +1,63 @@
+# Precios reales de mercado, agosto 2026. Fuente: mamá de Diego.
+# Formato: nombre  precio  [unidad]  [kg por unidad]
+# Todo por kilo salvo que diga lo contrario.
+
+Papa 2.50 kilo
+Cebolla 2.50 kilo
+Tomate 4.00 kilo
+Zanahoria 2.50 kilo
+Ajo 16.00 kilo
+Aji Fresco 8.00 kilo
+Limon 3.50 kilo
+Culantro 2.00 kilo
+Arroz 4.20 kilo
+Fideos 6.00 kilo
+Pollo 9.00 kilo
+Zapallo 3.00 kilo
+Apio 2.00 kilo
+Espinaca 4.00 kilo
+Lechuga 3.00 kilo
+Camote 2.50 kilo
+Yuca 2.50 kilo
+Beterraga 3.50 kilo
+Vainita 4.00 kilo
+Pimiento Fresco 7.00 kilo
+Azucar 4.00 kilo
+Arveja Grano Verde 4.00 kilo
+Lenteja Grano Seco 7.00 kilo
+Frijol Grano Seco 9.00 kilo
+Frijol Grano Verde 5.00 kilo
+Olluco 3.80 kilo
+Guanabana 8.00 kilo
+Melocoton 7.00 kilo
+Mango 8.00 kilo
+Maracuya 6.00 kilo
+Membrillo 6.00 kilo
+Uva 12.00 kilo
+Ciruela 6.00 kilo
+Chirimoya 8.50 kilo
+Platano 3.50 kilo
+
+# Leche: ella distingue dos. Para cocinar mando la fresca en bolsa.
+Leche 4.50 litro
+
+# No se venden por kilo. El ultimo numero es cuanto pesa la unidad, y ESO
+# todavia no esta verificado: son estimaciones mias. Preguntar.
+Choclo 2.00 unidad 0.45
+Alcachofa 2.50 unidad 0.30
+Esparrago 4.00 atado 0.45
+Aceite 9.50 botella 0.90
+
+# Lo que el SISAP no cotiza. Estos entran como productos nuevos.
+Carne de res 32.00 kilo
+Carne de res lomo 38.00 kilo
+Carne de cerdo 34.00 kilo
+Pescado bonito 12.00 kilo
+Queso fresco 38.00 kilo
+Leche evaporada 4.20 tarro
+Pan frances 1.00 bolsa
+Sillao 1.80 botella
+Aji panca en pasta 2.00 bolsa
+Cebolla china 2.00 atado
+Hierbabuena 2.00 atado
+Perejil 2.00 atado

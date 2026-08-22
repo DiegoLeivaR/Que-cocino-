@@ -90,11 +90,33 @@ def generar(hablar=True):
     if os.path.exists(reales_path):
         with io.open(reales_path, encoding="utf-8") as f:
             reales = json.load(f).get("kilo", {})
-        for nombre, v in reales.items():
-            if nombre in prods and str(v.get("unidad", "")).startswith("kil"):
-                prods[nombre]["mercado"] = round(float(v["precio"]), 2)
+        def poner(nombre, precio):
+            """Un precio real de mercado entra si o si, exista o no en el SISAP."""
+            if nombre in prods:
+                prods[nombre]["mercado"] = round(float(precio), 2)
                 prods[nombre]["fuente"] = "mercado"
-                n_reales += 1
+            else:
+                prods[nombre] = {
+                    "variedades": [], "mayorista": round(precio / 1.5, 2),
+                    "cat": "proteina" if any(w in nombre.lower() for w in
+                            ("carne", "pescado", "pollo", "cerdo")) else "otros",
+                    "mercado": round(float(precio), 2), "fuente": "mercado",
+                }
+            return 1
+
+        for nombre, v in reales.items():
+            if str(v.get("unidad", "")).startswith(("kil", "lit")):
+                n_reales += poner(nombre, v["precio"])
+
+        # Carne, queso, pescado: el SISAP no los cotiza, pero si alguien nos
+        # dio el precio de mercado son tan reales como los demas. Entran al
+        # catalogo para que las recetas puedan usarlos y costearlos.
+        with io.open(reales_path, encoding="utf-8") as f:
+            otros = json.load(f).get("otros", [])
+        for x in otros:
+            if not str(x.get("unidad", "")).startswith(("kil", "lit")):
+                continue          # sin saber cuanto pesa un atado no sirve
+            n_reales += poner(x["nombre"].strip().title(), x["precio"])
 
     salida = {
         "fecha": d["fecha"],

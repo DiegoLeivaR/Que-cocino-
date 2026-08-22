@@ -1,0 +1,266 @@
+{
+ "kilo": {
+  "Papa": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Papa"
+  },
+  "Cebolla": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Cebolla"
+  },
+  "Tomate": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Tomate"
+  },
+  "Zanahoria": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Zanahoria"
+  },
+  "Ajo": {
+   "precio": 16.0,
+   "unidad": "kilo",
+   "dicho": "Ajo"
+  },
+  "Aji Fresco": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Aji Fresco"
+  },
+  "Limon": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Limon"
+  },
+  "Culantro": {
+   "precio": 2.0,
+   "unidad": "kilo",
+   "dicho": "Culantro"
+  },
+  "Arroz": {
+   "precio": 4.2,
+   "unidad": "kilo",
+   "dicho": "Arroz"
+  },
+  "Fideos": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Fideos"
+  },
+  "Pollo": {
+   "precio": 9.0,
+   "unidad": "kilo",
+   "dicho": "Pollo"
+  },
+  "Zapallo": {
+   "precio": 3.0,
+   "unidad": "kilo",
+   "dicho": "Zapallo"
+  },
+  "Apio": {
+   "precio": 2.0,
+   "unidad": "kilo",
+   "dicho": "Apio"
+  },
+  "Espinaca": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Espinaca"
+  },
+  "Lechuga": {
+   "precio": 3.0,
+   "unidad": "kilo",
+   "dicho": "Lechuga"
+  },
+  "Camote": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Camote"
+  },
+  "Yuca": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Yuca"
+  },
+  "Beterraga": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Beterraga"
+  },
+  "Vainita": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Vainita"
+  },
+  "Pimiento Fresco": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Pimiento Fresco"
+  },
+  "Azucar Comercial": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Azucar"
+  },
+  "Arveja Grano Verde": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Arveja Grano Verde"
+  },
+  "Lenteja Grano Seco": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Lenteja Grano Seco"
+  },
+  "Frijol Grano Seco": {
+   "precio": 9.0,
+   "unidad": "kilo",
+   "dicho": "Frijol Grano Seco"
+  },
+  "Frijol Grano Verde": {
+   "precio": 5.0,
+   "unidad": "kilo",
+   "dicho": "Frijol Grano Verde"
+  },
+  "Olluco": {
+   "precio": 3.8,
+   "unidad": "kilo",
+   "dicho": "Olluco"
+  },
+  "Guanabana": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Guanabana"
+  },
+  "Melocoton": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Melocoton"
+  },
+  "Mango": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Mango"
+  },
+  "Maracuya": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Maracuya"
+  },
+  "Membrillo": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Membrillo"
+  },
+  "Uva": {
+   "precio": 12.0,
+   "unidad": "kilo",
+   "dicho": "Uva"
+  },
+  "Ciruela": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Ciruela"
+  },
+  "Chirimoya": {
+   "precio": 8.5,
+   "unidad": "kilo",
+   "dicho": "Chirimoya"
+  },
+  "Platano": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Platano"
+  },
+  "Leche": {
+   "precio": 4.5,
+   "unidad": "litro",
+   "dicho": "Leche"
+  },
+  "Choclo": {
+   "precio": 4.44,
+   "unidad": "kilo",
+   "dicho": "Choclo"
+  },
+  "Alcachofa": {
+   "precio": 8.33,
+   "unidad": "kilo",
+   "dicho": "Alcachofa"
+  },
+  "Esparrago": {
+   "precio": 8.89,
+   "unidad": "kilo",
+   "dicho": "Esparrago"
+  },
+  "Aceite": {
+   "precio": 10.56,
+   "unidad": "kilo",
+   "dicho": "Aceite"
+  },
+  "Carne De Res": {
+   "precio": 32.0,
+   "unidad": "kilo",
+   "dicho": "Carne de res"
+  },
+  "Carne De Res Lomo": {
+   "precio": 38.0,
+   "unidad": "kilo",
+   "dicho": "Carne de res lomo"
+  },
+  "Carne De Cerdo": {
+   "precio": 34.0,
+   "unidad": "kilo",
+   "dicho": "Carne de cerdo"
+  },
+  "Pescado Bonito": {
+   "precio": 12.0,
+   "unidad": "kilo",
+   "dicho": "Pescado bonito"
+  },
+  "Queso Fresco": {
+   "precio": 38.0,
+   "unidad": "kilo",
+   "dicho": "Queso fresco"
+  }
+ },
+ "otros": [
+  {
+   "nombre": "Leche evaporada",
+   "precio": 4.2,
+   "unidad": "tarro"
+  },
+  {
+   "nombre": "Pan frances",
+   "precio": 1.0,
+   "unidad": "bolsa"
+  },
+  {
+   "nombre": "Sillao",
+   "precio": 1.8,
+   "unidad": "botella"
+  },
+  {
+   "nombre": "Aji panca en pasta",
+   "precio": 2.0,
+   "unidad": "bolsa"
+  },
+  {
+   "nombre": "Cebolla china",
+   "precio": 2.0,
+   "unidad": "atado"
+  },
+  {
+   "nombre": "Hierbabuena",
+   "precio": 2.0,
+   "unidad": "atado"
+  },
+  {
+   "nombre": "Perejil",
+   "precio": 2.0,
+   "unidad": "atado"
+  }
+ ]
+}

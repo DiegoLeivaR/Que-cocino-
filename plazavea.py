@@ -6,9 +6,9 @@ Plaza Vea corre sobre VTEX, que expone el catalogo sin autenticacion:
 
 Para que sirve: el SISAP da precios MAYORISTAS, que no son lo que pagas.
 Con el super podemos estimar el precio de mercado, usando la regla observada
-de que el supermercado esta ~20% por encima del mercado de barrio:
+de que el supermercado esta ~49% por encima del mercado de barrio:
 
-    mercado ~= precio_lista_super / 1.20
+    mercado ~= precio_lista_super / 1.49
 
 Usamos ListPrice (precio de lista) y no Price, porque Price incluye ofertas
 y las ofertas no representan el precio normal.
@@ -25,7 +25,11 @@ URL = ("https://www.plazavea.com.pe/api/catalog_system/pub/products/search/"
        "?ft=%s&_from=0&_to=19")
 
 # Cuanto mas caro esta el super respecto al mercado de barrio.
-FACTOR_SUPER = 1.20
+# Medido en agosto 2026 contra precios reales de mercado: cae entre x1.49
+# y x1.56 segun que productos se comparen. Uso 1.52. Antes asumia 1.20, y
+# por eso la app venia mostrando precios ~35% mas altos de lo real.
+# Por eso toda la app venia mostrando precios ~30% mas altos de lo real.
+FACTOR_SUPER = 1.52
 
 # Nombre en nuestro catalogo -> que buscar en el super
 BUSQUEDA = {

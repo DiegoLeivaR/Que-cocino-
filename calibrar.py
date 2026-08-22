@@ -47,22 +47,45 @@ def parsear(linea):
         return None
     nombre = m.group(1).strip()
     precio = float(m.group(2).replace(",", "."))
-    unidad = (m.group(3).strip().lower() or "kilo")
-    return nombre, precio, unidad
+    resto = m.group(3).strip().lower()
+
+    # "atado 0.25" -> la unidad y cuanto pesa, para poder pasarlo a kilos
+    peso = None
+    mp = re.search(r"(\d+(?:[.,]\d+)?)\s*$", resto)
+    if mp and not resto.lower().startswith(("kil", "lit")):
+        peso = float(mp.group(1).replace(",", "."))
+        resto = resto[:mp.start()].strip()
+    return nombre, precio, (resto or "kilo"), peso
+
+
+# Palabras que solo describen una variedad y no cambian el producto:
+# "frijol canario" sigue siendo frijol. En cambio "cebolla china" es otra
+# cosa distinta de la cebolla, y "leche evaporada" no es leche fresca.
+_VARIEDAD = {"fresco", "fresca", "seco", "seca", "comercial", "canario",
+             "criollo", "criolla", "blanca", "blanco", "amarilla", "amarillo",
+             "nacional", "corriente", "verde", "grano", "de", "y", "molido"}
 
 
 def emparejar(nombre, catalogo):
-    """Encuentra el producto del catalogo que corresponde al nombre escrito."""
+    """Producto del catalogo que corresponde al nombre escrito, o None.
+
+    Es deliberadamente estricta: antes "cebolla china" pisaba el precio de
+    "Cebolla" y "leche evaporada" el de "Leche". Ante la duda devuelve None
+    y el producto entra como uno nuevo, que es el error barato.
+    """
     n = norm(nombre)
-    for c in catalogo:                       # exacto
+    for c in catalogo:                                  # exacto
         if norm(c) == n:
             return c
-    for c in catalogo:                       # 'papa' -> 'Papa'
-        if norm(c).startswith(n) or n.startswith(norm(c)):
+    for c in catalogo:                                  # 'aji' -> 'Aji Fresco'
+        if norm(c).startswith(n + " "):
             return c
-    for c in catalogo:                       # 'aji' -> 'Aji Fresco'
-        if n in norm(c) or norm(c) in n:
-            return c
+    for c in catalogo:                                  # 'frijol grano seco canario'
+        nc = norm(c)
+        if n.startswith(nc + " ") or n.startswith(nc + "-"):
+            sobra = re.split(r"[\s-]+", n[len(nc):].strip())
+            if all(w in _VARIEDAD for w in sobra if w):
+                return c
     return None
 
 
@@ -88,7 +111,9 @@ def main():
         d = parsear(linea)
         if not d:
             continue
-        nombre, precio, unidad = d
+        nombre, precio, unidad, peso = d
+        if peso:                       # convertir a precio por kilo
+            precio, unidad = round(precio / peso, 2), "kilo"
         cat = emparejar(nombre, catalogo)
         if cat:
             reales[cat] = {"precio": precio, "unidad": unidad, "dicho": nombre}
