@@ -33,6 +33,10 @@ def _cfg():
             "modelo": os.environ.get(
                 "IA_MODELO", "gemini-3.6-flash" if gemini else "gpt-4.1-mini"
             ),
+            "modelo_rapido": os.environ.get(
+                "IA_MODELO_RAPIDO",
+                "gemini-3.5-flash-lite" if gemini else "gpt-4.1-mini"
+            ),
         }
 
     if not os.path.exists(CONFIG):
