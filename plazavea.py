@@ -179,9 +179,15 @@ def precio_super(producto, consulta=None, techo=None):
     consulta = consulta or BUSQUEDA.get(producto, producto)
     clave = _sin_tildes(re.split(r"\s", consulta)[0])  # 'papa', 'azucar', ...
 
-    try:
-        crudos = _buscar(consulta)
-    except Exception:
+    crudos = None
+    for intento in range(2):   # el sitio corta conexiones si le pides seguido
+        try:
+            crudos = _buscar(consulta)
+            break
+        except Exception:
+            if intento == 0:
+                time.sleep(1.5)
+    if crudos is None:
         return None
 
     candidatos = []
@@ -251,7 +257,7 @@ def precio_libre(texto, techo=90):
     return round(sup / FACTOR_SUPER, 2), sup
 
 
-def todos(productos, pausa=0.4):
+def todos(productos, pausa=0.8):
     """Precio de super para varios productos. Con pausa para no abusar del sitio."""
     salida = {}
     for i, p in enumerate(productos):

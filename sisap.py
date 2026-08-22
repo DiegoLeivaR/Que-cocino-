@@ -78,6 +78,43 @@ MERCADO_DE.update({c: "15011502" for c in _FRUTAS})  # Mayorista Nro 2 - Frutas
 MERCADO_DE.update({c: "15013704" for c in _ABARROTES})
 MERCADO_DEFECTO = "15011501"
 
+# Categoria de cada producto, para poder agrupar la lista en la app en vez
+# de escupir los 60 y pico de golpe.
+CATEGORIAS = {}
+for _c in ("0104 1014 0101 0105 0102 0107 0106 0212 0228 0230 0231 0209 0217 "
+           "0220 0215 0207 0229 0403 0206 0216 0224 0218 0202 0203 0204 0630"
+           ).split():
+    CATEGORIAS[_c] = "verduras"
+for _c in ("0611 0629 0617 0622 0614 0626 0627 0628 0637 0633 0619 0615 0607 "
+           "0618 0608 0603 0609 0604 0620 0621 0636 0640 0641").split():
+    CATEGORIAS[_c] = "frutas"
+for _c in "0301 0302 0303 0305 0501 0502 0504 0506 0306 0405 0404".split():
+    CATEGORIAS[_c] = "granos"
+for _c in "0401 1010 1011 1001 1005 1105 1104 0902 1018".split():
+    CATEGORIAS[_c] = "abarrotes"
+CATEGORIAS["1301"] = "proteina"
+
+
+_TILDES = str.maketrans("áéíóúüñ", "aeiouun")
+
+
+def _norm(t):
+    """'Piña' y 'Pina' tienen que ser la misma palabra al comparar."""
+    return t.lower().strip().translate(_TILDES)
+
+
+def categoria_de(nombre):
+    """Categoria a partir del nombre que devuelve el SISAP ('Aji Fresco')."""
+    objetivo = _norm(nombre)
+    for cod, n in PRODUCTOS.items():
+        if _norm(n) == objetivo:
+            return CATEGORIAS.get(cod, "otros")
+    # el SISAP a veces alarga el nombre ("Azucar Comercial" vs "Azucar")
+    for cod, n in PRODUCTOS.items():
+        if objetivo.startswith(_norm(n)):
+            return CATEGORIAS.get(cod, "otros")
+    return "otros"
+
 
 def _fetch(mercado, codigos, fecha):
     """Hace un POST al SISAP y devuelve el HTML crudo (ya decodificado)."""

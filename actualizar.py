@@ -43,6 +43,7 @@ def generar(hablar=True):
     for nombre, p in prods.items():
         lista = [v["p"] for v in p["variedades"]]
         p["mayorista"] = round(min(lista), 2)
+        p["cat"] = sisap.categoria_de(nombre)
         p["variedades"].sort(key=lambda v: v["p"])
 
     di("     %d productos, %d variedades (%s)\n"
