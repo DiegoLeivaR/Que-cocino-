@@ -80,6 +80,12 @@ class App(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def end_headers(self):
+        # Sin esto el navegador se queda con el index.html viejo y editas sin
+        # ver ningun cambio. Es un servidor de desarrollo: cachear no aporta.
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        http.server.SimpleHTTPRequestHandler.end_headers(self)
+
     def _responder(self, codigo, obj):
         cuerpo = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         self.send_response(codigo)

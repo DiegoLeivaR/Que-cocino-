@@ -7,14 +7,14 @@
 <title>Qué cocino hoy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&display=swap" rel="stylesheet">
 <style>
 :root{
   --fondo:#faf9f7; --sup:#fff; --tinta:#141312; --gris:#6e6a65;
   --linea:#e7e3dd; --linea2:#f0ede8;
   --aji:#f2b01e; --aji-osc:#7a5400;
   --ok:#2e7d4f; --mal:#c0392b;
-  --display:"Archivo",system-ui,sans-serif;
+  --display:"Fraunces",Georgia,serif;
   --ui:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   /* curvas de Material 3 */
   --emph:cubic-bezier(.2,0,0,1);
@@ -24,7 +24,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{background:var(--fondo);color:var(--tinta);font-family:var(--ui);
-  font-size:15px;line-height:1.5;overscroll-behavior-y:none}
+  font-size:15.5px;line-height:1.58;overscroll-behavior-y:none}
 
 /* ---------- barra superior ---------- */
 .appbar{position:sticky;top:0;z-index:20;background:var(--fondo);
@@ -56,15 +56,31 @@ main{position:relative;padding:0 16px var(--barra)}
 /* eje compartido horizontal, como en Android */
 @keyframes entraDer{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
 @keyframes entraIzq{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
-.pantalla.viva.adelante{animation:entraDer .35s var(--emph)}
-.pantalla.viva.atras{animation:entraIzq .35s var(--emph)}
+.pantalla.viva.va-der{animation:entraDer .35s var(--emph)}
+.pantalla.viva.va-izq{animation:entraIzq .35s var(--emph)}
 
-h2.tit{font-family:var(--display);font-weight:700;font-size:26px;
-  letter-spacing:-.03em;margin:14px 0 4px;line-height:1.15}
-p.baja{margin:0 0 20px;color:var(--gris);font-size:13.5px}
-.rotulo{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--gris);margin:24px 0 10px;display:flex;align-items:center;gap:8px}
-.rotulo b{color:var(--tinta)}
+h2.tit{font-family:var(--display);font-weight:600;font-size:29px;
+  font-variation-settings:"SOFT" 70,"WONK" 1,"opsz" 40;
+  letter-spacing:-.02em;margin:0 0 6px;line-height:1.08}
+.marca h1,.cifra,.pnom,.pcosto b,.candado h2{font-variation-settings:"SOFT" 60,"WONK" 1}
+p.baja{margin:0;color:var(--gris);font-size:14px;line-height:1.55}
+.rotulo{font-family:var(--display);font-size:19px;font-weight:600;
+  font-variation-settings:"SOFT" 70,"WONK" 1;letter-spacing:-.015em;
+  color:var(--tinta);margin:30px 0 12px;display:flex;align-items:baseline;gap:8px}
+.rotulo .n{font-family:var(--ui);font-size:13px;font-weight:600;color:var(--gris)}
+
+/* encabezado de cada paso: dibujo al costado del titulo, como pediste */
+.encab{display:flex;align-items:flex-start;gap:14px;margin:18px 0 22px}
+.encab .txt{flex:1;min-width:0;padding-top:2px}
+.dibujo{width:76px;height:76px;flex:0 0 auto;color:var(--tinta);
+  fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dibujo .calido{stroke:var(--aji)}
+.vapor{animation:vaporSube 3.2s ease-in-out infinite;transform-origin:center}
+.vapor.b{animation-delay:.7s}
+.vapor.c{animation-delay:1.4s}
+@keyframes vaporSube{
+  0%,100%{opacity:.3;transform:translateY(1px)}
+  50%{opacity:1;transform:translateY(-2.5px)}}
 
 svg.i{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;
   stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:block}
@@ -280,8 +296,20 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 
 <!-- ============ 1 · TU COCINA ============ -->
 <section class="pantalla viva" id="p1">
-  <h2 class="tit">¿Qué hay en tu cocina?</h2>
-  <p class="baja">Tómale una foto a tu refri y la IA marca lo que ve. O agrégalo tú.</p>
+  <div class="encab"><svg class="dibujo" viewBox="0 0 76 76">
+      <path d="M13 30.5c-.4 0 20-1.2 25.2-1.1 5.2.1 25 1.4 25 1.1"/>
+      <path d="M16.5 30.8 21 57.5c.4 2.6 2.7 4.6 5.4 4.6h23.4c2.7 0 5-2 5.4-4.6l4.4-26.6"/>
+      <path d="M28 36.5 30 56M38 36.3 38 56M48 36.6 46 56"/>
+      <circle class="calido" cx="32" cy="20.5" r="5.2"/>
+      <path class="calido" d="M45.5 29c4.2-2.2 6.2-7.4 4.6-12.2-4.8.7-8.1 4.7-8.1 9.6"/>
+      <path class="calido" d="M42 26.4c.2-3.4 1.4-6.7 3.4-9.1"/>
+    </svg>
+    <div class="txt">
+      <h2 class="tit">Vamos a ver qué tienes</h2>
+      <p class="baja">Tómale una foto a tu refri y yo marco lo que reconozca.
+         Lo que falte lo agregas tú.</p>
+    </div>
+  </div>
 
   <div class="foto">
     <button class="bprim" id="bCamara">
@@ -302,10 +330,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </div>
   <div class="aviso" id="avisoFoto"></div>
 
-  <div class="rotulo" style="margin-top:28px">Tu despensa · <b id="cuentaDesp">0</b></div>
+  <div class="rotulo">Tu despensa <span class="n" id="cuentaDesp">0</span></div>
   <div class="fichas" id="despensa"></div>
 
-  <div class="rotulo">Agregar</div>
+  <div class="rotulo">¿Qué más hay?</div>
   <div class="buscar">
     <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.8"/><path d="m16.2 16.2 4 4"/></svg>
     <input type="text" id="q" placeholder="Busca un ingrediente" autocomplete="off">
@@ -316,13 +344,25 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 
 <!-- ============ 2 · TU ANTOJO ============ -->
 <section class="pantalla" id="p2">
-  <h2 class="tit">¿Qué se te antoja?</h2>
-  <p class="baja">Ajusta y vuelve a buscar las veces que quieras.</p>
+  <div class="encab"><svg class="dibujo" viewBox="0 0 76 76">
+      <path class="calido vapor"   d="M28 28.5c-2.3-3 2.3-4.7 0-7.7s2.3-4.7 0-7.5"/>
+      <path class="calido vapor b" d="M38 26c-2.5-3.3 2.5-5.1 0-8.4s2.5-5.1 0-8.2"/>
+      <path class="calido vapor c" d="M48 28.5c-2.3-3 2.3-4.7 0-7.7s2.3-4.7 0-7.5"/>
+      <path d="M12 35h52"/>
+      <path d="M17.5 35.2 21 58c.4 2.7 2.7 4.7 5.4 4.7h23.2c2.7 0 5-2 5.4-4.7l3.5-22.8"/>
+      <path d="M64 38h4.5a3.4 3.4 0 0 1 0 6.8H63M12 38H7.5a3.4 3.4 0 0 0 0 6.8H13"/>
+    </svg>
+    <div class="txt">
+      <h2 class="tit">¿Qué se te antoja?</h2>
+      <p class="baja">Juega con esto. Puedes volver y cambiarlo
+         cuantas veces quieras.</p>
+    </div>
+  </div>
 
-  <div class="rotulo">Qué tan elaborado</div>
+  <div class="rotulo">¿Cuánto te quieres complicar?</div>
   <div class="segm" id="dif"></div>
 
-  <div class="rotulo">Cuánto puedes gastar</div>
+  <div class="rotulo">¿Cuánto puedes gastar?</div>
   <div class="plata">
     <div class="cifra" id="cifra"></div>
     <div class="pie" id="pieCifra"></div>
@@ -333,8 +373,21 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 
 <!-- ============ 3 · A COCINAR ============ -->
 <section class="pantalla" id="p3">
-  <h2 class="tit">Para 4 porciones</h2>
-  <p class="baja" id="bajaRes">Ordenadas por lo que te falta comprar.</p>
+  <div class="encab"><svg class="dibujo" viewBox="0 0 76 76">
+      <path class="calido vapor"   d="M28 28.5c-2.3-3 2.3-4.7 0-7.7s2.3-4.7 0-7.5"/>
+      <path class="calido vapor b" d="M42 25c-2.3-3 2.3-4.7 0-7.7s2.3-4.7 0-7.4"/>
+      <ellipse cx="38" cy="46" rx="22.5" ry="8.6"/>
+      <path d="M15.6 46.4c.4 6.6 10.4 11.6 22.4 11.6s22-5 22.4-11.6"/>
+      <ellipse cx="38" cy="45.6" rx="12.6" ry="4.6"/>
+      <path d="M8 34.5v9M8 34.5c-1.6 0-2.8 1.5-2.8 3.4 0 1.9 1.2 3.4 2.8 3.4"/>
+      <path d="M68 34.5v9M68 34.5c1.6 0 2.8 1.5 2.8 3.4 0 1.9-1.2 3.4-2.8 3.4"/>
+    </svg>
+    <div class="txt">
+      <h2 class="tit">A cocinar</h2>
+      <p class="baja" id="bajaRes">Cuatro porciones, ordenadas por lo que
+         te falta comprar.</p>
+    </div>
+  </div>
   <div id="salida"></div>
 </section>
 
@@ -406,8 +459,8 @@ function irA(n, atras) {
   paso = n;
   $$(".pantalla").forEach((s,i) => {
     s.classList.toggle("viva", i === n-1);
-    s.classList.remove("adelante","atras");
-    if (i === n-1) s.classList.add(atras ? "atras" : "adelante");
+    s.classList.remove("va-der","va-izq");
+    if (i === n-1) s.classList.add(atras ? "va-izq" : "va-der");
   });
   [1,2,3].forEach(i => $("#t"+i).classList.toggle("hecho", i <= n));
   $("#atras").classList.toggle("ver", n > 1);
@@ -422,18 +475,18 @@ function pintaBarra() {
   b.classList.remove("oro");
   if (paso === 1) {
     c.innerHTML = tengo.size
-      ? `<b>${tengo.size}</b> ingrediente${tengo.size>1?"s":""} en tu despensa`
-      : "Puedes seguir sin marcar nada";
-    b.textContent = "Continuar";
+      ? `Con <b>${tengo.size}</b> cosa${tengo.size>1?"s":""} ya puedo trabajar`
+      : "Si no marcas nada igual te propongo algo";
+    b.textContent = "Listo, sigamos";
     b.onclick = () => irA(2);
   } else if (paso === 2) {
-    c.innerHTML = `${DIFS.find(d=>d.v===dif).lb} · hasta <b>S/ ${NIVELES[nivel].t}</b>`;
+    c.innerHTML = `${DIFS.find(d=>d.v===dif).lb}, gastando hasta <b>S/ ${NIVELES[nivel].t}</b>`;
     b.textContent = "Buscar recetas";
     b.classList.add("oro");
     b.onclick = () => { irA(3); pedirRecetas(); };
   } else {
-    c.innerHTML = recetas.length ? "¿No te convence? Cambia y vuelve a buscar" : "";
-    b.textContent = "Ajustar y buscar otras";
+    c.innerHTML = recetas.length ? "¿Nada te convence? Cambia y te busco otras" : "";
+    b.textContent = "Cambiar y buscar otras";
     b.onclick = () => irA(2, true);
   }
 }
@@ -454,7 +507,7 @@ function pintaDespensa() {
   const d = $("#despensa");
   d.innerHTML = tengo.size
     ? [...tengo].map(n => ficha(n, true)).join("")
-    : `<div class="vacio">Todavía no marcas nada. Toma una foto o busca abajo.</div>`;
+    : `<div class="vacio">Está vacía. Tómale una foto a tu refri, o busca abajo lo que tengas.</div>`;
   $("#cuentaDesp").textContent = tengo.size;
   pintaSugeridos();
   pintaAcordeon();
@@ -520,7 +573,7 @@ $("#reg").oninput = e => { nivel = +e.target.value; pintaPlata(); };
 async function pedirRecetas() {
   $("#salida").innerHTML = `<div class="carga ver">
     <div class="riel"><i></i></div>
-    <div class="etapa">Buscando platos para lo que tienes…</div>
+    <div class="etapa">Pensando qué te queda rico con eso…</div>
     ${"<div class='hueso'></div><div class='hueso c2'></div><div class='hueso c3'></div>".repeat(2)}
   </div>`;
   try {
@@ -573,19 +626,19 @@ function render() {
           <div class="val">${d.hay ? "lo tienes" : "S/ "+d.c.toFixed(2)}</div></div>`).join("")}
         ${r.extra?.length ? `<div class="falta">Además necesitas: ${r.extra.join(", ")}</div>` : ""}
       </div>
-      <button class="bcomo" data-k="${k}">${ic("libro","i s")} Cómo se hace</button>
+      <button class="bcomo" data-k="${k}">${ic("libro","i s")} Enséñame a hacerlo</button>
       <div class="carga" id="carga${k}"></div>
       <div class="receta" id="rec${k}"></div>
     </article>`).join("")
-    : `<div class="nada">No salió nada con esos filtros.<br>Sube el presupuesto o marca más ingredientes.</div>`;
+    : `<div class="nada">Con eso no me sale nada.<br>Sube un poco el presupuesto o marca más ingredientes.</div>`;
 }
 
 /* ---------------- explicacion, con carga por etapas ---------------- */
 const ETAPAS = [
-  "Revisando qué te falta…",
-  "Calculando las cantidades…",
+  "Viendo qué te falta comprar…",
+  "Sacando las cantidades para 4…",
   "Escribiendo los pasos…",
-  "Buscando el truco del plato…",
+  "Y un truquito para que salga rico…",
 ];
 
 $("#salida").addEventListener("click", async e => {
@@ -673,7 +726,7 @@ async function procesar(file) {
   $("#mini").classList.add("ver");
   $("#miniTxt").innerHTML = "<b>Tu foto</b><em>analizando…</em>";
   av.className = "aviso trab ver";
-  av.innerHTML = ic("ojo") + "<div>Mirando qué hay en la imagen…</div>";
+  av.innerHTML = ic("ojo") + "<div>Déjame ver qué hay ahí…</div>";
   try {
     const d = await api("/api/ver", { imagen: await achicar(file), mime:"image/jpeg" });
     if (d.error) throw new Error(d.error);
