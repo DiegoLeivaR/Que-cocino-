@@ -26,7 +26,7 @@
    "dicho": "Ajo"
   },
   "Aji Fresco": {
-   "precio": 8.0,
+   "precio": 7.0,
    "unidad": "kilo",
    "dicho": "Aji Fresco"
   },
@@ -181,7 +181,7 @@
    "dicho": "Leche"
   },
   "Choclo": {
-   "precio": 4.44,
+   "precio": 10.0,
    "unidad": "kilo",
    "dicho": "Choclo"
   },
@@ -224,6 +224,141 @@
    "precio": 38.0,
    "unidad": "kilo",
    "dicho": "Queso fresco"
+  },
+  "Papa Huayro": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Papa Huayro"
+  },
+  "Huevos": {
+   "precio": 7.5,
+   "unidad": "kilo",
+   "dicho": "Huevos"
+  },
+  "Garbanzo Grano Seco": {
+   "precio": 9.0,
+   "unidad": "kilo",
+   "dicho": "Garbanzo Grano Seco"
+  },
+  "Pallar Grano Seco": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Pallar Grano Seco"
+  },
+  "Frijol Negro": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Frijol Negro"
+  },
+  "Arveja Partida": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Arveja Partida"
+  },
+  "Trigo": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Trigo"
+  },
+  "Moron": {
+   "precio": 6.0,
+   "unidad": "kilo",
+   "dicho": "Moron"
+  },
+  "Chuno": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Chuno"
+  },
+  "Fresa": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Fresa"
+  },
+  "Sandia": {
+   "precio": 3.0,
+   "unidad": "kilo",
+   "dicho": "Sandia"
+  },
+  "Melon": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Melon"
+  },
+  "Papaya": {
+   "precio": 4.5,
+   "unidad": "kilo",
+   "dicho": "Papaya"
+  },
+  "Naranja": {
+   "precio": 2.5,
+   "unidad": "kilo",
+   "dicho": "Naranja"
+  },
+  "Mandarina": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Mandarina"
+  },
+  "Palta": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Palta"
+  },
+  "Piña": {
+   "precio": 4.0,
+   "unidad": "kilo",
+   "dicho": "Pina"
+  },
+  "Granadilla": {
+   "precio": 4.5,
+   "unidad": "kilo",
+   "dicho": "Granadilla"
+  },
+  "Manzana": {
+   "precio": 10.0,
+   "unidad": "kilo",
+   "dicho": "Manzana"
+  },
+  "Tuna": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Tuna"
+  },
+  "Pota": {
+   "precio": 7.0,
+   "unidad": "kilo",
+   "dicho": "Pota"
+  },
+  "Pejerrey": {
+   "precio": 12.0,
+   "unidad": "kilo",
+   "dicho": "Pejerrey"
+  },
+  "Caballa": {
+   "precio": 12.0,
+   "unidad": "kilo",
+   "dicho": "Caballa"
+  },
+  "Harina": {
+   "precio": 8.0,
+   "unidad": "kilo",
+   "dicho": "Harina"
+  },
+  "Avena": {
+   "precio": 8.67,
+   "unidad": "kilo",
+   "dicho": "Avena"
+  },
+  "Mantequilla": {
+   "precio": 66.67,
+   "unidad": "kilo",
+   "dicho": "Mantequilla"
+  },
+  "Margarina": {
+   "precio": 33.33,
+   "unidad": "kilo",
+   "dicho": "Margarina"
   }
  },
  "otros": [
@@ -261,6 +396,11 @@
    "nombre": "Perejil",
    "precio": 2.0,
    "unidad": "atado"
+  },
+  {
+   "nombre": "Papa Amarilla",
+   "precio": 3.5,
+   "unidad": "kilo"
   }
  ]
 }

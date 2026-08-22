@@ -61,3 +61,43 @@ Aji panca en pasta 2.00 bolsa
 Cebolla china 2.00 atado
 Hierbabuena 2.00 atado
 Perejil 2.00 atado
+
+# ---- Segunda tanda ----
+# Un choclo pesa 200 g con mazorca (yo suponia 450: estaba al doble)
+Choclo 2.00 unidad 0.20
+
+Papa 2.50 kilo
+Papa Amarilla 3.50 kilo
+Papa Huayro 3.50 kilo
+Huevos 7.50 kilo
+
+Aji Fresco 7.00 kilo
+Garbanzo Grano Seco 9.00 kilo
+Pallar Grano Seco 8.00 kilo
+Frijol Negro 7.00 kilo
+Arveja Partida 7.00 kilo
+Trigo 6.00 kilo
+Moron 6.00 kilo
+Chuno 7.00 kilo
+
+Fresa 8.00 kilo
+Sandia 3.00 kilo
+Melon 4.00 kilo
+Papaya 4.50 kilo
+Naranja 2.50 kilo
+Mandarina 3.50 kilo
+Palta 8.00 kilo
+Pina 4.00 kilo
+Granadilla 4.50 kilo
+Manzana 10.00 kilo
+Tuna 7.00 kilo
+
+Pota 7.00 kilo
+Pejerrey 12.00 kilo
+Caballa 12.00 kilo
+
+# Envases: precio y cuanto trae, para pasarlo a kilo
+Harina 1.20 bolsa 0.150
+Avena 1.30 bolsa 0.150
+Mantequilla 12.00 barra 0.180
+Margarina 1.50 barra 0.045

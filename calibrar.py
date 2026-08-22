@@ -61,9 +61,11 @@ def parsear(linea):
 # Palabras que solo describen una variedad y no cambian el producto:
 # "frijol canario" sigue siendo frijol. En cambio "cebolla china" es otra
 # cosa distinta de la cebolla, y "leche evaporada" no es leche fresca.
-_VARIEDAD = {"fresco", "fresca", "seco", "seca", "comercial", "canario",
-             "criollo", "criolla", "blanca", "blanco", "amarilla", "amarillo",
-             "nacional", "corriente", "verde", "grano", "de", "y", "molido"}
+# Ojo: "amarilla" y "blanca" NO estan aca. En la papa esas palabras cambian
+# el precio de verdad (amarilla 3.50 contra blanca 2.50), asi que tienen que
+# entrar como productos distintos.
+_VARIEDAD = {"fresco", "fresca", "comercial", "canario", "criollo", "criolla",
+             "nacional", "corriente", "grano", "de", "y", "molido"}
 
 
 def emparejar(nombre, catalogo):
