@@ -60,11 +60,9 @@ def ip_local():
 
 
 
-# PIN de acceso. Vacio = sin candado (asi corre en tu casa).
-# En un hosting publico se pone la variable ACCESO_PIN y sin ese PIN nadie
-# puede usar la IA: es lo unico que separa tu cuota de todo internet.
-PIN = os.environ.get("ACCESO_PIN", "").strip()
-
+# Sin PIN: la app se muestra a gente que la esta probando y una pantalla de
+# clave antes de ver nada es un muro innecesario. Lo que si queda es el tope
+# de peticiones por IP, que protege la cuota sin que el usuario lo note.
 _intentos = {}  # ip -> [momentos de peticion], para frenar abusos
 
 # Misma busqueda = misma respuesta, sin volver a pagar cuota. La idea es que
@@ -103,19 +101,6 @@ class App(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         if not self.path.startswith("/api/"):
             return self.send_error(404)
-
-        # /api/entrar solo dice si el PIN es correcto; no gasta cuota de IA
-        if self.path == "/api/entrar":
-            largo = int(self.headers.get("Content-Length", 0))
-            try:
-                pin = json.loads(self.rfile.read(largo).decode("utf-8")).get("pin", "")
-            except Exception:
-                pin = ""
-            return self._responder(200, {"ok": (not PIN) or pin == PIN,
-                                         "hace_falta": bool(PIN)})
-
-        if PIN and self.headers.get("X-Pin", "") != PIN:
-            return self._responder(401, {"error": "PIN incorrecto o vencido."})
 
         ip = self.headers.get("X-Forwarded-For", self.client_address[0]).split(",")[0]
         if _muy_seguido(ip):
@@ -302,7 +287,6 @@ if __name__ == "__main__":
             print("Desde tu celular  :  http://%s:%d/index.html" % (ip, PUERTO))
             print("  (mismo wifi. Mientras corre, cualquiera en tu red puede")
             print("   abrirla y gastar tu cuota de IA. Cortala cuando termines.)")
-        print("Acceso con PIN:" , "SI" if PIN else "no (abierto a tu red)")
         if hay_key:
             print("IA conectada (config.json encontrado)")
         else:

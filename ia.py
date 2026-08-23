@@ -85,14 +85,20 @@ def _post(url, cuerpo, headers, intentos=3):
                     "y dale de nuevo.")
             if e.code == 503:
                 raise RuntimeError(
-                    "El modelo esta saturado ahorita. Prueba de nuevo en un "
-                    "rato, o cambia de modelo en config.json.")
-            raise RuntimeError("El modelo respondio %s: %s" % (e.code, detalle))
-        except urllib.error.URLError as e:
+                    "El modelo está con mucha demanda ahorita. "
+                    "Dale de nuevo en un ratito.")
+            # Al usuario no le sirve el volcado crudo de la API
+            print("  !! HTTP %s: %s" % (e.code, detalle))
+            raise RuntimeError("Algo falló del lado del modelo (error %s). "
+                               "Vuelve a intentar." % e.code)
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            # "The read operation timed out" era esto, y salia crudo en pantalla
             if intento < intentos - 1:
                 time.sleep(2 ** intento)
                 continue
-            raise RuntimeError("No hay conexion con el modelo: %s" % e.reason)
+            print("  !! red: %r" % e)
+            raise RuntimeError("El modelo se demoró demasiado en contestar. "
+                               "Vuelve a intentar.")
 
 
 def modelos_disponibles():
@@ -253,14 +259,45 @@ def _json_del_texto(txt):
     parseo por eso.
     """
     txt = re.sub(r"^```(?:json)?|```$", "", txt.strip(), flags=re.M).strip()
-    m = re.search(r"[\[{].*[\]}]", txt, re.S)
-    crudo = m.group(0) if m else txt
+    txt = txt.replace("“", '"').replace("”", '"')
+    ini = min([i for i in (txt.find("["), txt.find("{")) if i >= 0] or [0])
+    crudo = txt[ini:]
+
     try:
         return json.loads(crudo)
     except json.JSONDecodeError:
-        limpio = re.sub(r",\s*(?=[}\]])", "", crudo)   # coma colgando
-        limpio = limpio.replace("“", '"').replace("”", '"')
-        return json.loads(limpio)
+        pass
+
+    # coma colgando antes de cerrar
+    try:
+        return json.loads(re.sub(r",\s*(?=[}\]])", "", crudo))
+    except json.JSONDecodeError:
+        pass
+
+    # Respuesta cortada a la mitad (el modelo llego a su limite de tokens).
+    # Rescatamos los objetos que si vinieron completos en vez de perder todo.
+    if crudo.lstrip().startswith("["):
+        objetos, hondo, arranque = [], 0, None
+        for i, ch in enumerate(crudo):
+            if ch == "{":
+                if hondo == 0:
+                    arranque = i
+                hondo += 1
+            elif ch == "}":
+                hondo -= 1
+                if hondo == 0 and arranque is not None:
+                    try:
+                        objetos.append(json.loads(crudo[arranque:i + 1]))
+                    except json.JSONDecodeError:
+                        pass
+                    arranque = None
+        if objetos:
+            print("  aviso: respuesta cortada, rescate %d de los platos"
+                  % len(objetos))
+            return objetos
+
+    raise RuntimeError("El modelo devolvió algo que no pude leer. "
+                       "Vuelve a intentar.")
 
 
 def ver_ingredientes(imagen_b64, catalogo, mime="image/jpeg"):

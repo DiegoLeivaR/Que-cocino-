@@ -62,7 +62,7 @@ main{position:relative;padding:0 16px var(--barra)}
 h2.tit{font-family:var(--display);font-weight:600;font-size:29px;
   font-variation-settings:"SOFT" 70,"WONK" 1,"opsz" 40;
   letter-spacing:-.02em;margin:0 0 6px;line-height:1.08}
-.marca h1,.cifra,.pnom,.pcosto b,.candado h2{font-variation-settings:"SOFT" 60,"WONK" 1}
+.marca h1,.cifra,.pnom,.pcosto b{font-variation-settings:"SOFT" 60,"WONK" 1}
 p.baja{margin:0;color:var(--gris);font-size:14px;line-height:1.55}
 .rotulo{font-family:var(--display);font-size:19px;font-weight:600;
   font-variation-settings:"SOFT" 70,"WONK" 1;letter-spacing:-.015em;
@@ -251,13 +251,48 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .receta{display:none;margin-top:16px;padding-top:15px;border-top:1px solid var(--linea2);
   font-size:14.5px;line-height:1.62;animation:sube .35s var(--emph)}
 .receta.ver{display:block}
-.receta h2{font-family:var(--display);font-size:12px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.1em;color:var(--gris);margin:22px 0 8px}
-.receta h2:first-child{margin-top:0}
+/* Los titulos de seccion eran gris 12px y se perdian. Ahora son encabezados
+   de verdad: serif grande, en tinta, con una barrita de aji al costado. */
+.receta h2{display:flex;align-items:center;gap:9px;font-family:var(--display);
+  font-size:19px;font-weight:600;font-variation-settings:"SOFT" 70,"WONK" 1;
+  letter-spacing:-.015em;color:var(--tinta);text-transform:none;
+  margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--linea2)}
+.receta h2::before{content:"";width:4px;height:19px;flex:0 0 auto;
+  background:var(--aji);border-radius:2px}
+.receta h2:first-child{margin-top:4px;padding-top:0;border-top:0}
 .receta ol,.receta ul{padding-left:19px;margin:8px 0}
 .receta li{margin:7px 0}
 .receta p{margin:8px 0}
 .receta strong{font-weight:600}
+
+/* compartir e imprimir la receta */
+.acciones{display:flex;gap:8px;margin-top:18px;padding-top:14px;
+  border-top:1px solid var(--linea2)}
+.acciones button{flex:1;display:flex;align-items:center;justify-content:center;
+  gap:7px;padding:11px 8px;border-radius:11px;background:var(--sup);
+  border:1px solid var(--linea);font-family:var(--ui);font-size:13.5px;
+  font-weight:600;color:var(--tinta);cursor:pointer;
+  transition:transform .12s var(--emph),background .15s}
+.acciones button:active{transform:scale(.96);background:var(--linea2)}
+.acciones .ico-wa{color:#25d366}
+
+/* Al imprimir (o guardar como PDF) sale solo la receta, sin la app alrededor */
+@media print{
+  .appbar,.pasos,.barra,.encab,.pcab,.ings,.bcomo,.carga,.acciones,
+  .aviso,#p1,#p2{display:none!important}
+  body{background:#fff;font-size:12pt}
+  body::before{display:none}
+  main{padding:0}
+  .plato{border:0;box-shadow:none;padding:0;margin:0;page-break-after:always}
+  .plato.imprimiendo .pcab{display:block!important}
+  .plato.imprimiendo .pcab .precio,.plato.imprimiendo .like{display:none!important}
+  .plato:not(.imprimiendo){display:none!important}
+  .receta{border-top:0;margin-top:8pt}
+  .receta h2{page-break-after:avoid}
+  .pie-print{display:block!important;margin-top:16pt;padding-top:8pt;
+    border-top:1px solid #ccc;font-size:9pt;color:#666}
+}
+.pie-print{display:none}
 
 /* ---------- barra de accion ---------- */
 .barra{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--fondo);
@@ -273,19 +308,6 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .cuenta{font-size:12.5px;color:var(--gris);text-align:center;margin-bottom:9px}
 .cuenta b{color:var(--tinta)}
 
-/* ---------- candado ---------- */
-.candado{position:fixed;inset:0;z-index:60;background:var(--fondo);display:none;
-  place-items:center;padding:24px}
-.candado.ver{display:grid}
-.candado .caja{width:100%;max-width:320px;text-align:center}
-.candado h2{font-family:var(--display);font-weight:700;font-size:22px;margin:0 0 6px}
-.candado p{color:var(--gris);font-size:13.5px;margin:0 0 20px}
-.candado input{width:100%;padding:15px;font-family:var(--display);font-size:24px;
-  font-weight:700;text-align:center;letter-spacing:.3em;background:var(--sup);
-  border:1px solid var(--linea);border-radius:13px;color:var(--tinta)}
-.candado input:focus{outline:none;border-color:var(--tinta)}
-.candado .err{color:var(--mal);font-size:13px;font-weight:600;margin-top:11px;display:none}
-.candado .err.ver{display:block}
 
 .nada{text-align:center;color:var(--gris);font-size:14px;padding:40px 20px}
 :focus-visible{outline:2px solid var(--tinta);outline-offset:2px}
@@ -293,16 +315,6 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 </style>
 </head>
 <body>
-
-<div class="candado" id="candado">
-  <div class="caja">
-    <h2>PIN de acceso</h2>
-    <p>Esta app usa una cuota limitada de IA.</p>
-    <input type="password" id="pin" inputmode="numeric" autocomplete="off" placeholder="····" maxlength="24">
-    <div class="err" id="pinErr">No es ese PIN</div>
-    <button class="accion" id="entrar" style="margin-top:16px">Entrar</button>
-  </div>
-</div>
 
 <div class="appbar" id="appbar">
   <button class="atras" id="atras" aria-label="Volver">
@@ -450,14 +462,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
-let PIN_GUARDADO = localStorage.getItem("quecocino_pin") || "";
 async function api(ruta, cuerpo) {
   const res = await fetch(ruta, {
     method:"POST",
-    headers:{"Content-Type":"application/json","X-Pin":PIN_GUARDADO},
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify(cuerpo),
   });
-  if (res.status === 401) { $("#candado").classList.add("ver"); throw new Error("Necesitas el PIN."); }
   return res.json();
 }
 
@@ -469,6 +479,8 @@ const I = {
   ojo:'<path d="M2.6 12S6.4 5.9 12 5.9 21.4 12 21.4 12 17.6 18.1 12 18.1 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.9"/>',
   chevron:'<path d="M6.5 9.5 12 15l5.5-5.5"/>',
   candado:'<rect x="5.2" y="10.6" width="13.6" height="9.6" rx="2.2"/><path d="M8.4 10.6V8.2a3.6 3.6 0 0 1 7.2 0v2.4"/>',
+  compartir:'<path d="M17.4 8.4a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM6.6 14.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2zM17.4 20.8a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2z"/><path d="m8.9 13.3 6.2 3.6M15.1 7.1 8.9 10.7"/>',
+  descargar:'<path d="M12 3.8v11.4M7.9 11.3l4.1 4 4.1-4"/><path d="M4.4 15.6v2.8a2 2 0 0 0 2 2h11.2a2 2 0 0 0 2-2v-2.8"/>',
   libro:'<path d="M4.2 5.9a1.6 1.6 0 0 1 1.6-1.6h4.3A2 2 0 0 1 12 5.6a2 2 0 0 1 1.9-1.3h4.3a1.6 1.6 0 0 1 1.6 1.6v11.6a1.6 1.6 0 0 1-1.6 1.6h-4.3A2 2 0 0 0 12 20.4a2 2 0 0 0-1.9-1.3H5.8a1.6 1.6 0 0 1-1.6-1.6z"/><path d="M12 5.6v14.8"/>',
 };
 const ic = (n,c="i") => `<svg class="${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
@@ -848,7 +860,7 @@ document.addEventListener("click", async e => {
 
   // ya la pedimos antes: se muestra al toque, sin gastar nada
   if (explicaciones[r.nombre]) {
-    rec.innerHTML = md(explicaciones[r.nombre]);
+    rec.innerHTML = md(explicaciones[r.nombre]) + accionesReceta(r.nombre);
     rec.classList.add("ver");
     b.dataset.hecho = "1";
     b.remove();
@@ -883,7 +895,7 @@ document.addEventListener("click", async e => {
     });
     if (d.error) throw new Error(d.error);
     recordarReceta(r.nombre, d.texto);
-    rec.innerHTML = md(d.texto);
+    rec.innerHTML = md(d.texto) + accionesReceta(r.nombre);
     rec.classList.add("ver");
     b.dataset.hecho = "1";
     b.remove();
@@ -898,6 +910,66 @@ document.addEventListener("click", async e => {
     carga.classList.remove("ver");
     delete b.dataset.cargando;
     marcarOcupado(false);
+  }
+});
+
+/* ---------------- compartir la receta ---------------- */
+function accionesReceta(nombre) {
+  return `<div class="acciones">
+    <button data-comp="${nombre}">${ic("compartir","i s")} Compartir</button>
+    <button data-pdf="${nombre}">${ic("descargar","i s")} Guardar PDF</button>
+  </div>
+  <div class="pie-print">Qué cocino hoy · precios de mercado de Lima, ${PRECIOS.fecha}</div>`;
+}
+
+/* Texto plano para WhatsApp. El markdown no se ve alla, asi que lo limpiamos
+   y dejamos algo que se lea bien en un chat. */
+function recetaComoTexto(nombre) {
+  const r = [...ultimas, ...guardadas].find(x => x.nombre === nombre);
+  // El orden importa: si convierto los titulos antes que las viñetas, los
+  // asteriscos de una regla se comen los de la otra y quedan sueltos.
+  const cuerpo = (explicaciones[nombre] || "")
+    .replace(/^\s*[-*]\s+/gm, "• ")            // 1. viñetas
+    .replace(/\*\*(.+?)\*\*/g, "*$1*")         // 2. negrita al estilo WhatsApp
+    .replace(/^#{1,3}\s*(.+)$/gm, "\n*$1*")    // 3. titulos
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  const lista = r ? "\n\n*Te falta comprar* (S/ " + r.falta.toFixed(2) + ")\n" +
+      r.det.filter(d => !d.hay)
+           .map(d => `• ${d.n} ${(d.kg*1000).toFixed(0)}g — S/ ${d.c.toFixed(2)}`)
+           .join("\n") : "";
+  return `*${nombre}* · para 4 porciones${lista}\n\n${cuerpo}\n\n` +
+         `_Precios de mercado de Lima, ${PRECIOS.fecha}_`;
+}
+
+document.addEventListener("click", async e => {
+  const bc = e.target.closest("[data-comp]");
+  if (bc) {
+    const txt = recetaComoTexto(bc.dataset.comp);
+    // En celular abre la hoja nativa: WhatsApp queda a un toque
+    if (navigator.share) {
+      try { await navigator.share({ title: bc.dataset.comp, text: txt }); }
+      catch (_) { /* si cancela, no pasa nada */ }
+    } else {
+      await navigator.clipboard.writeText(txt);
+      const antes = bc.innerHTML;
+      bc.innerHTML = ic("ok","i s") + " Copiada";
+      setTimeout(() => { bc.innerHTML = antes; }, 1800);
+    }
+    return;
+  }
+
+  const bp = e.target.closest("[data-pdf]");
+  if (bp) {
+    // Sin librerias: el navegador imprime a PDF y el CSS de impresion deja
+    // solo la receta. En Android Chrome sale "Guardar como PDF".
+    const plato = bp.closest(".plato");
+    document.querySelectorAll(".plato").forEach(p => p.classList.remove("imprimiendo"));
+    plato.classList.add("imprimiendo");
+    const titulo = document.title;
+    document.title = bp.dataset.pdf;          // asi se llama el archivo
+    window.print();
+    setTimeout(() => { document.title = titulo; }, 800);
   }
 });
 
@@ -974,22 +1046,6 @@ async function procesar(file) {
   }
 }
 
-/* ---------------- candado ---------------- */
-async function verPin(p) {
-  const r = await (await fetch("/api/entrar", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({pin:p})})).json();
-  return r.ok;
-}
-$("#entrar").onclick = async () => {
-  const v = $("#pin").value.trim();
-  if (await verPin(v)) {
-    PIN_GUARDADO = v; localStorage.setItem("quecocino_pin", v);
-    $("#candado").classList.remove("ver");
-  } else { $("#pinErr").classList.add("ver"); $("#pin").value = ""; $("#pin").focus(); }
-};
-$("#pin").addEventListener("keydown", e => { if (e.key === "Enter") $("#entrar").click(); });
-verPin(PIN_GUARDADO).then(ok => { if (!ok) { $("#candado").classList.add("ver"); $("#pin").focus(); } });
 
 pintaDespensa();
 pintaPlata();
