@@ -145,11 +145,14 @@ class App(http.server.SimpleHTTPRequestHandler):
                 # Lo que ya vio: si pide otras, el cache no aplica y ademas
                 # le decimos al modelo que no repita.
                 evitar = datos.get("evitar") or []
+                sin_precio = datos.get("sin_precio") or []
+                porciones = int(datos.get("porciones") or 4)
                 clave = json.dumps([sorted(datos.get("tengo", [])),
                                     datos.get("dificultad"),
                                     datos.get("presupuesto"),
                                     sorted((datos.get("extras") or {}).keys()),
-                                    sorted(evitar)],
+                                    sorted(evitar), sorted(sin_precio),
+                                    porciones],
                                    ensure_ascii=False)
                 if clave in _cache_recetas:
                     print("     (de cache, sin gastar cuota)")
@@ -158,6 +161,7 @@ class App(http.server.SimpleHTTPRequestHandler):
                 r = ia.sugerir_recetas(
                     datos.get("tengo", []), datos.get("dificultad", "media"),
                     datos.get("presupuesto", 30), precios, evitar=evitar,
+                    sin_precio=sin_precio, porciones=porciones,
                 )
                 _cache_recetas[clave] = r
                 if len(_cache_recetas) > 60:
@@ -171,7 +175,9 @@ class App(http.server.SimpleHTTPRequestHandler):
                 clave = json.dumps([datos.get("receta"),
                                     sorted(datos.get("tengo", [])),
                                     sorted(x.get("ing", "") for x in
-                                           datos.get("falta", []))],
+                                           datos.get("falta", [])),
+                                    sorted(datos.get("sin_precio") or []),
+                                    datos.get("porciones")],
                                    ensure_ascii=False)
                 if clave in _cache_recetas:
                     print("  -> %s (de cache)" % datos.get("receta"))
@@ -181,6 +187,9 @@ class App(http.server.SimpleHTTPRequestHandler):
                 txt = ia.explicar_receta(
                     datos["receta"], datos.get("tengo", []), datos.get("falta", []),
                     datos.get("presupuesto", "?"), datos.get("dificultad", "?"),
+                    sin_precio=datos.get("sin_precio") or [],
+                    porciones=int(datos.get("porciones") or 4),
+                    kcal=int(datos.get("kcal") or 0),
                 )
                 _cache_recetas[clave] = txt
                 if len(_cache_recetas) > 60:

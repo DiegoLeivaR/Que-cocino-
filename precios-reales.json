@@ -225,6 +225,11 @@
    "unidad": "kilo",
    "dicho": "Queso fresco"
   },
+  "Papa Amarilla": {
+   "precio": 3.5,
+   "unidad": "kilo",
+   "dicho": "Papa Amarilla"
+  },
   "Papa Huayro": {
    "precio": 3.5,
    "unidad": "kilo",
@@ -398,8 +403,8 @@
    "unidad": "atado"
   },
   {
-   "nombre": "Papa Amarilla",
-   "precio": 3.5,
+   "nombre": "Atun",
+   "precio": 5.0,
    "unidad": "kilo"
   }
  ]

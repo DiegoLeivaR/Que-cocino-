@@ -160,6 +160,17 @@ svg.i.g{width:26px;height:26px;stroke-width:1.5}
 .seg .sb{font-size:11.5px;color:var(--gris);margin-top:2px}
 .seg.on .sb{color:rgba(255,255,255,.6)}
 
+/* Para cuantos: una sola linea, sin titulo propio, para no engordar el paso */
+.gente{display:flex;align-items:center;gap:10px;margin-top:14px}
+.gente span{font-size:13.5px;color:var(--gris);flex:1}
+.gente div{display:flex;gap:6px}
+.gente button{width:36px;height:36px;border-radius:10px;background:var(--sup);
+  border:1px solid var(--linea);font-family:var(--ui);font-size:14px;
+  font-weight:600;color:var(--tinta);cursor:pointer;
+  transition:transform .12s var(--emph),background .15s}
+.gente button:active{transform:scale(.9)}
+.gente button.on{background:var(--tinta);border-color:var(--tinta);color:#fff}
+
 .plata{background:var(--sup);border:1px solid var(--linea);border-radius:16px;padding:18px 16px}
 .cifra{font-family:var(--display);font-weight:700;font-size:38px;letter-spacing:-.04em;
   text-align:center;line-height:1;font-variant-numeric:tabular-nums}
@@ -182,13 +193,19 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 @keyframes sube{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 .plato:nth-child(1){animation-delay:.02s}.plato:nth-child(2){animation-delay:.07s}
 .plato:nth-child(3){animation-delay:.12s}.plato:nth-child(4){animation-delay:.17s}
-.pcab{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.pcab{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pcab > div:first-child{min-width:0}   /* deja que el nombre se corte, no el precio */
 .pnom{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.025em;
   margin:0;line-height:1.22}
-.pmin{display:flex;align-items:center;gap:5px;color:var(--gris);font-size:12.5px;margin-top:5px}
-.pcosto{text-align:right;flex:0 0 auto}
+.pmin{display:flex;align-items:center;gap:5px;color:var(--gris);font-size:12.5px;
+  margin-top:5px;flex-wrap:wrap}
+.pmin .sep{opacity:.45}
+.pmin b{font-weight:600;color:var(--tinta)}
+.pnutri{color:var(--gris);font-size:12.5px;margin-top:4px;font-style:italic;
+  line-height:1.35}
+.pcosto{text-align:right;flex:0 0 auto;white-space:nowrap}
 .pcosto b{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.03em;
-  display:block;font-variant-numeric:tabular-nums}
+  display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pcosto span{font-size:11px;color:var(--gris);display:block;margin-top:1px}
 .pcosto.pasa b{color:var(--mal)}
 /* corazon: guardar un plato para volver aunque cambies los filtros */
@@ -405,6 +422,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div class="rotulo">¿Cuánto te quieres complicar?</div>
   <div class="segm" id="dif"></div>
 
+  <div class="gente">
+    <span>¿Para cuántos?</span>
+    <div id="porciones"></div>
+  </div>
+
   <div class="rotulo">¿Cuánto puedes gastar?</div>
   <div class="plata">
     <div class="cifra" id="cifra"></div>
@@ -504,7 +526,10 @@ const CATS = {
 const COMUNES = ["Papa","Cebolla","Arroz","Huevos","Pollo","Tomate","Ajo",
                  "Aceite","Limon","Zanahoria","Aji Fresco","Fideos"];
 
-let tengo = new Set(), dif = "media", nivel = 1, extras = {};
+let tengo = new Set(), dif = "media", nivel = 1, extras = {}, porciones = 4;
+// Lo que la IA vio en tu foto pero no cotizamos (jamon, chia...). No cuesta
+// nada porque ya lo tienes, pero la receta si puede usarlo.
+let sinPrecio = [];
 let recetas = [], ultimas = [], paso = 1;
 // Los guardados viven en el navegador: si juegas con los filtros y pierdes
 // de vista el plato que te gusto, sigue estando aca.
@@ -687,6 +712,15 @@ $("#dif").onclick = e => {
   s.classList.add("on"); dif = s.dataset.v; pintaBarra();
 };
 
+/* ---------------- para cuantas personas ---------------- */
+$("#porciones").innerHTML = [1,2,4,6]
+  .map(n => `<button data-p="${n}" class="${n===porciones?"on":""}">${n}</button>`).join("");
+$("#porciones").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  $$("#porciones button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); porciones = +b.dataset.p; pintaBarra();
+};
+
 function pintaPlata() {
   const n = NIVELES[nivel];
   $("#cifra").innerHTML = `<small>S/</small>${n.t}${nivel===3?"+":""}`;
@@ -716,7 +750,7 @@ async function pedirRecetas(otras) {
   try {
     const d = await api("/api/recetas", {
       tengo:[...tengo], dificultad:dif, presupuesto:NIVELES[nivel].max,
-      extras, evitar: yaVistas });
+      extras, evitar: yaVistas, sin_precio: sinPrecio, porciones });
     if (d.error) throw new Error(d.error);
     if (!d.recetas?.length) throw new Error("No devolvió recetas.");
     recetas = d.recetas;
@@ -762,7 +796,12 @@ function tarjeta(r, k, pre) {
       <div class="pcab">
         <div>
           <h3 class="pnom">${r.nombre}</h3>
-          <div class="pmin">${ic("reloj","i s")} ${r.min} min</div>
+          <div class="pmin">${ic("reloj","i s")} ${r.min} min
+            ${r.kcal ? `<span class="sep">·</span> <b>${r.kcal}</b> kcal
+                        <span class="sep">·</span> ${porciones===1 ? "1 porción"
+                          : porciones + " porciones"}` : ""}
+          </div>
+          ${r.nutri ? `<div class="pnutri">${r.nutri}</div>` : ""}
         </div>
         <div>
           <div class="pcosto ${r.falta>tope?"pasa":""}">
@@ -892,6 +931,7 @@ document.addEventListener("click", async e => {
       receta:r.nombre, dificultad:dif, presupuesto:"S/ "+NIVELES[nivel].t,
       tengo:r.det.filter(x => x.hay).map(x => x.n),
       falta:r.det.filter(x => !x.hay).map(x => ({ing:x.n, kg:x.kg, costo:x.c})),
+      sin_precio: sinPrecio, porciones, kcal: r.kcal || 0,
     });
     if (d.error) throw new Error(d.error);
     recordarReceta(r.nombre, d.texto);
@@ -1033,11 +1073,14 @@ async function procesar(file) {
     const hallados = d.reconocidos.length + (d.extras || []).length;
     $("#miniTxt").innerHTML = `<b>${hallados} ingrediente${hallados===1?"":"s"}</b>
       <em>${d.comentario || "listo"}</em>`;
-    const sinPrecio = (d.otros||[]).filter(o => !(o in extras));
+    // Estos no los cotizo, pero ya son tuyos: entran a las recetas gratis
+    // en vez de descartarse como antes.
+    sinPrecio = [...new Set([...sinPrecio,
+                             ...(d.otros||[]).filter(o => !(o in extras))])];
     av.className = "aviso bien ver";
     av.innerHTML = ic("ok") + `<div>Agregué <b>${nuevos}</b> a tu despensa.
       ${(d.extras||[]).length ? `<br>Con precio del súper: ${d.extras.map(x=>x.nombre).join(", ")}.` : ""}
-      ${sinPrecio.length ? `<br>Vi pero sin precio: ${sinPrecio.join(", ")}.` : ""}</div>`;
+      ${sinPrecio.length ? `<br>También usaré, sin costarte nada: <b>${sinPrecio.join(", ")}</b>.` : ""}</div>`;
   } catch (err) {
     $("#miniTxt").innerHTML = "<b>Tu foto</b><em>no se pudo leer</em>";
     av.className = "aviso mal ver";

@@ -354,7 +354,8 @@ DIFICULTADES = {
 }
 
 
-def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
+def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None,
+                    sin_precio=None, porciones=4):
     """Pide n recetas peruanas al modelo, ajustadas a lo que hay y al bolsillo.
 
     Le pasamos los precios reales para que respete el presupuesto, pero el
@@ -363,6 +364,11 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
 
     `evitar` son platos que ya se le mostraron al usuario. Cuando pide "otras",
     lo que quiere es variedad, no la misma lista de nuevo.
+
+    `sin_precio` son cosas que la persona TIENE pero que no cotizamos (jamon,
+    chia, lo que sea). Antes se descartaban, y era un desperdicio: si ya las
+    tiene, la receta deberia poder usarlas. No suman al presupuesto porque no
+    hay que comprarlas.
     """
     catalogo = sorted(precios.keys())
     lista_precios = "\n".join(
@@ -370,17 +376,19 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
     )
     tiene = ", ".join(tengo) if tengo else "nada en particular"
     evitar = [str(x) for x in (evitar or [])][-24:]
+    sin_precio = [str(x)[:40] for x in (sin_precio or [])][:12]
 
     prompt = (
         "Eres un cocinero peruano de casa, de esos que resuelven rico y barato.\n\n"
-        "Propone %d platos PERUANOS caseros para 4 porciones.\n\n"
+        "Propone %d platos PERUANOS caseros para %d porcion(es).\n\n"
         "Lo que la persona ya tiene: %s\n"
+        "%s"
         "Dificultad pedida: %s\n"
         "Puede gastar como maximo: S/ %s en lo que le falte comprar\n\n"
         "Precios reales por kilo (usalos para no pasarte del presupuesto):\n%s\n\n"
         "REGLAS:\n"
         "1. En 'ing' usa SOLO nombres EXACTOS de esa lista de precios, con la "
-        "cantidad en KILOS (numero decimal) para 4 porciones.\n"
+        "cantidad en KILOS (numero decimal) para %d porcion(es).\n"
         "2. Prioriza platos que aprovechen lo que ya tiene.\n"
         "3. Cocina de casa: olla, sarten, horno comun. NADA de pachamanca, "
         "parrilla, horno de barro, ni cosas que pidan equipo especial o "
@@ -389,15 +397,26 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
         "5. Si el plato necesita algo que no esta en la lista de precios "
         "(carne de res, sillao, queso, especias), ponlo en 'extra' como texto.\n"
         "6. Varia: no repitas la misma base en los %d platos.\n"
+        "7. 'kcal' son las calorias aproximadas POR PORCION. No te pases de "
+        "listo: un estimado razonable basta.\n"
+        "8. 'nutri' es media frase sobre el plato desde lo nutricional, en "
+        "criollo y sin sermon. Ejemplos: 'bien cargado de proteina', 'liviano "
+        "pero llena', 'mucho carbohidrato, ideal si vas a chambear parado', "
+        "'la espinaca le mete hierro'.\n"
         "%s\n"
         "Responde SOLO con este JSON, sin texto alrededor:\n"
-        '[{"nombre":"Arroz con Pollo","min":45,'
+        '[{"nombre":"Arroz con Pollo","min":45,"kcal":520,'
+        '"nutri":"proteina y carbo en un solo plato",'
         '"ing":{"Pollo":0.8,"Arroz":0.4,"Culantro":0.1},'
         '"extra":["comino"],'
         '"pasos":"Una o dos frases de como se hace."}]'
-        % (n, tiene, DIFICULTADES.get(dificultad, dificultad),
-           presupuesto, lista_precios, n,
-           ("7. YA LE PROPUSISTE ESTOS, no los repitas ni les cambies el "
+        % (n, porciones, tiene,
+           ("TAMBIEN tiene esto, aprovechalo aunque no le pongamos precio "
+            "(ya es suyo, no lo tiene que comprar): %s\n" % ", ".join(sin_precio))
+           if sin_precio else "",
+           DIFICULTADES.get(dificultad, dificultad),
+           presupuesto, lista_precios, porciones, n,
+           ("9. YA LE PROPUSISTE ESTOS, no los repitas ni les cambies el "
             "nombre para colarlos: %s\n   Dale platos claramente distintos.\n"
             % ", ".join(evitar)) if evitar else "")
     )
@@ -413,6 +432,10 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
                if k in validos and isinstance(v, (int, float)) and 0 < v < 5}
         if not ing:
             continue
+        try:
+            kcal = int(float(r.get("kcal") or 0))
+        except (TypeError, ValueError):
+            kcal = 0
         salida.append({
             "nombre": str(r.get("nombre", "Plato"))[:60],
             "min": int(r.get("min") or 30),
@@ -420,20 +443,26 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None):
             "ing": ing,
             "extra": [str(x)[:40] for x in (r.get("extra") or [])][:6],
             "pasos": str(r.get("pasos", ""))[:400],
+            # un numero absurdo es peor que ninguno
+            "kcal": kcal if 80 <= kcal <= 1800 else 0,
+            "nutri": str(r.get("nutri", ""))[:90],
         })
     return salida
 
 
-def explicar_receta(receta, tengo, falta, presupuesto, dificultad):
+def explicar_receta(receta, tengo, falta, presupuesto, dificultad,
+                    sin_precio=None, porciones=4, kcal=0):
     """Genera la explicacion paso a paso de la receta elegida."""
     lista_falta = ", ".join(
         "%s (%dg, S/%.2f)" % (f["ing"], f["kg"] * 1000, f["costo"]) for f in falta
     ) or "nada, tienes todo"
+    sin_precio = [str(x)[:40] for x in (sin_precio or [])][:12]
 
     prompt = (
         "Eres un cocinero peruano explicandole a alguien que cocina poco.\n\n"
-        "Plato: %s (dificultad %s, para 4 porciones)\n"
+        "Plato: %s (dificultad %s, para %d porcion(es))\n"
         "Ya tiene en casa: %s\n"
+        "%s"
         "Le falta comprar: %s\n"
         "Su presupuesto: S/ %s\n\n"
         "Escribe en espanol peruano, tuteando, calido y directo. Estructura:\n\n"
@@ -444,11 +473,19 @@ def explicar_receta(receta, tengo, falta, presupuesto, dificultad):
         "Pasos numerados, concretos, con tiempos. Nada de relleno.\n\n"
         "## El truco\n"
         "Un consejo que hace la diferencia en este plato.\n\n"
+        "## Lo que aporta\n"
+        "Dos o tres lineas sobre el plato desde lo nutricional%s: si carga "
+        "proteina, si es pesado o liviano, que le falta para quedar completo "
+        "(por ejemplo una ensalada al lado). Hablado como amigo, sin sermon "
+        "ni tabla de nutricionista.\n\n"
         "## Si te sobra\n"
         "Que hacer con lo que quede.\n\n"
-        "Usa markdown simple. Maximo 400 palabras."
-        % (receta, dificultad, ", ".join(tengo) or "casi nada",
-           lista_falta, presupuesto)
+        "Usa markdown simple. Maximo 450 palabras."
+        % (receta, dificultad, porciones, ", ".join(tengo) or "casi nada",
+           ("Y tambien tiene esto, metelo en la receta si le queda bien: %s\n"
+            % ", ".join(sin_precio)) if sin_precio else "",
+           lista_falta, presupuesto,
+           (" (son unas %d kcal por porcion)" % kcal) if kcal else "")
     )
     return _llamar(prompt)
 

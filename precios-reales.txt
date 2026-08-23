@@ -101,3 +101,6 @@ Harina 1.20 bolsa 0.150
 Avena 1.30 bolsa 0.150
 Mantequilla 12.00 barra 0.180
 Margarina 1.50 barra 0.045
+
+# Tercera tanda
+Atun 5.00 kilo
