@@ -23,6 +23,41 @@ import sisap
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 
+# Cuanto es lo MINIMO que te venden, en kilos o litros. Nadie te despacha 50 g
+# de lentejas ni medio frasco de aceite: si la receta pide poco, igual pagas
+# la unidad entera. Sin esto la app mostraba leche a S/2.20, que es imposible.
+MINIMO_POR_CAT = {
+    "granos": 0.25,      # menestras y granos: un cuarto para abajo no venden
+    "proteina": 0.25,    # carnes y pescado: un cuarto, aunque lo usual es medio
+    "verduras": 0.10,    # sueltas, pero compras la pieza entera
+    "frutas": 0.10,
+    "abarrotes": 0.25,
+    "otros": 0.10,
+}
+MINIMO = {
+    "Aceite": 0.90,          # la botella entera de 900 ml
+    "Atun": 0.17,            # la lata entera
+    "Leche": 1.00,           # la bolsa de un litro
+    "Leche Evaporada": 0.39, # el tarro
+    "Arroz": 0.50,
+    "Azucar": 0.50, "Azucar Comercial": 0.50,
+    "Fideos": 0.50,
+    "Harina": 0.15, "Avena": 0.15,   # las bolsitas chicas
+    "Huevos": 0.06,          # se venden por unidad
+    "Queso Fresco": 0.20,
+    "Mantequilla": 0.18, "Margarina": 0.045,
+    "Culantro": 0.05, "Hierbabuena": 0.05, "Perejil": 0.05,  # el atado
+    "Cebolla China": 0.05,
+    "Ajo": 0.05,
+}
+
+
+def minimo_de(nombre, cat):
+    """Lo minimo que te venden de ese producto, en kilos."""
+    if nombre in MINIMO:
+        return MINIMO[nombre]
+    return MINIMO_POR_CAT.get(cat, 0.10)
+
 
 def generar(hablar=True):
     """Baja todo y escribe precios.json y precios.js. Devuelve el resumen."""
@@ -96,10 +131,24 @@ def generar(hablar=True):
                 prods[nombre]["mercado"] = round(float(precio), 2)
                 prods[nombre]["fuente"] = "mercado"
             else:
+                # Primero preguntamos al catalogo del SISAP: "Lenteja Grano
+                # Seco" es un grano aunque hoy no haya venido en la consulta.
+                # Sin esto caia en "otros" y le tocaba el minimo equivocado.
+                cat = sisap.categoria_de(nombre)
+                if cat == "otros":
+                    n = nombre.lower()
+                    if any(w in n for w in ("carne", "pescado", "pollo",
+                                            "cerdo", "pota", "pejerrey",
+                                            "caballa", "atun")):
+                        cat = "proteina"
+                    elif any(w in n for w in ("frijol", "lenteja", "garbanzo",
+                                              "pallar", "arveja", "trigo",
+                                              "moron", "quinua", "chuno",
+                                              "haba", "tarhui", "maiz")):
+                        cat = "granos"
                 prods[nombre] = {
                     "variedades": [], "mayorista": round(precio / 1.5, 2),
-                    "cat": "proteina" if any(w in nombre.lower() for w in
-                            ("carne", "pescado", "pollo", "cerdo")) else "otros",
+                    "cat": cat,
                     "mercado": round(float(precio), 2), "fuente": "mercado",
                 }
             return 1
@@ -117,6 +166,9 @@ def generar(hablar=True):
             if not str(x.get("unidad", "")).startswith(("kil", "lit")):
                 continue          # sin saber cuanto pesa un atado no sirve
             n_reales += poner(x["nombre"].strip().title(), x["precio"])
+
+    for nombre, p in prods.items():
+        p["min"] = minimo_de(nombre, p.get("cat", "otros"))
 
     salida = {
         "fecha": d["fecha"],

@@ -23,7 +23,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 11.0,
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Aji Seco": {
    "variedades": [
@@ -44,7 +45,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 28.53,
    "mercado": 18.77,
-   "fuente": "super"
+   "fuente": "super",
+   "min": 0.1
   },
   "Ajo": {
    "variedades": [
@@ -60,7 +62,8 @@ const PRECIOS = {
    "mayorista": 6.63,
    "cat": "verduras",
    "mercado": 16.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.05
   },
   "Alcachofa": {
    "variedades": [
@@ -72,7 +75,8 @@ const PRECIOS = {
    "mayorista": 6.0,
    "cat": "verduras",
    "mercado": 8.33,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Apio": {
    "variedades": [
@@ -84,7 +88,8 @@ const PRECIOS = {
    "mayorista": 5.75,
    "cat": "verduras",
    "mercado": 2.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Arveja Grano Verde": {
    "variedades": [
@@ -101,7 +106,8 @@ const PRECIOS = {
    "cat": "granos",
    "super": 8.6,
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Beterraga": {
    "variedades": [
@@ -113,7 +119,8 @@ const PRECIOS = {
    "mayorista": 2.91,
    "cat": "verduras",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Camote": {
    "variedades": [
@@ -129,7 +136,8 @@ const PRECIOS = {
    "mayorista": 1.1,
    "cat": "verduras",
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Cebolla": {
    "variedades": [
@@ -150,7 +158,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 3.84,
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Choclo": {
    "variedades": [
@@ -162,7 +171,8 @@ const PRECIOS = {
    "mayorista": 6.07,
    "cat": "verduras",
    "mercado": 10.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Culantro": {
    "variedades": [
@@ -175,7 +185,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 7.4,
    "mercado": 2.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.05
   },
   "Esparrago": {
    "variedades": [
@@ -187,7 +198,8 @@ const PRECIOS = {
    "mayorista": 7.0,
    "cat": "verduras",
    "mercado": 8.89,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Espinaca": {
    "variedades": [
@@ -200,7 +212,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 16.86,
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Frijol Grano Verde": {
    "variedades": [
@@ -212,7 +225,8 @@ const PRECIOS = {
    "mayorista": 3.78,
    "cat": "granos",
    "mercado": 5.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Haba Grano Verde": {
    "variedades": [
@@ -224,7 +238,8 @@ const PRECIOS = {
    "mayorista": 1.15,
    "cat": "granos",
    "mercado": 2.12,
-   "fuente": "estimado"
+   "fuente": "estimado",
+   "min": 0.25
   },
   "Hortalizas Chinas": {
    "variedades": [
@@ -256,7 +271,8 @@ const PRECIOS = {
    "mayorista": 2.5,
    "cat": "verduras",
    "mercado": 4.6,
-   "fuente": "estimado"
+   "fuente": "estimado",
+   "min": 0.1
   },
   "Lechuga": {
    "variedades": [
@@ -276,7 +292,8 @@ const PRECIOS = {
    "mayorista": 1.17,
    "cat": "verduras",
    "mercado": 3.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Limon": {
    "variedades": [
@@ -292,7 +309,8 @@ const PRECIOS = {
    "mayorista": 1.47,
    "cat": "frutas",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Olluco": {
    "variedades": [
@@ -304,7 +322,8 @@ const PRECIOS = {
    "mayorista": 3.38,
    "cat": "verduras",
    "mercado": 3.8,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Pallar Grano Verde": {
    "variedades": [
@@ -316,7 +335,8 @@ const PRECIOS = {
    "mayorista": 3.0,
    "cat": "granos",
    "mercado": 5.52,
-   "fuente": "estimado"
+   "fuente": "estimado",
+   "min": 0.25
   },
   "Papa": {
    "variedades": [
@@ -365,7 +385,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 4.8,
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Pimiento Fresco": {
    "variedades": [
@@ -377,7 +398,8 @@ const PRECIOS = {
    "mayorista": 4.31,
    "cat": "verduras",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Tomate": {
    "variedades": [
@@ -389,7 +411,8 @@ const PRECIOS = {
    "mayorista": 4.35,
    "cat": "verduras",
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Vainita": {
    "variedades": [
@@ -401,7 +424,8 @@ const PRECIOS = {
    "mayorista": 4.85,
    "cat": "verduras",
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Yuca": {
    "variedades": [
@@ -413,7 +437,8 @@ const PRECIOS = {
    "mayorista": 1.68,
    "cat": "verduras",
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Zanahoria": {
    "variedades": [
@@ -425,7 +450,8 @@ const PRECIOS = {
    "mayorista": 0.88,
    "cat": "verduras",
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Zapallo": {
    "variedades": [
@@ -446,7 +472,8 @@ const PRECIOS = {
    "cat": "verduras",
    "super": 3.79,
    "mercado": 3.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Bayas": {
    "variedades": [
@@ -462,7 +489,8 @@ const PRECIOS = {
    "mayorista": 19.75,
    "cat": "frutas",
    "mercado": 36.34,
-   "fuente": "estimado"
+   "fuente": "estimado",
+   "min": 0.1
   },
   "Chirimoya": {
    "variedades": [
@@ -478,7 +506,8 @@ const PRECIOS = {
    "mayorista": 3.65,
    "cat": "frutas",
    "mercado": 8.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Ciruela": {
    "variedades": [
@@ -490,7 +519,8 @@ const PRECIOS = {
    "mayorista": 4.35,
    "cat": "frutas",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Fresa": {
    "variedades": [
@@ -506,7 +536,8 @@ const PRECIOS = {
    "mayorista": 4.48,
    "cat": "frutas",
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Granadilla": {
    "variedades": [
@@ -522,7 +553,8 @@ const PRECIOS = {
    "mayorista": 2.44,
    "cat": "frutas",
    "mercado": 4.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Guanabana": {
    "variedades": [
@@ -538,7 +570,8 @@ const PRECIOS = {
    "mayorista": 6.85,
    "cat": "frutas",
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Mandarina": {
    "variedades": [
@@ -574,7 +607,8 @@ const PRECIOS = {
    "mayorista": 1.03,
    "cat": "frutas",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Mango": {
    "variedades": [
@@ -602,7 +636,8 @@ const PRECIOS = {
    "mayorista": 4.65,
    "cat": "frutas",
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Manzana": {
    "variedades": [
@@ -634,7 +669,8 @@ const PRECIOS = {
    "mayorista": 2.81,
    "cat": "frutas",
    "mercado": 10.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Maracuya": {
    "variedades": [
@@ -646,7 +682,8 @@ const PRECIOS = {
    "mayorista": 4.65,
    "cat": "frutas",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Melocoton": {
    "variedades": [
@@ -662,7 +699,8 @@ const PRECIOS = {
    "mayorista": 5.21,
    "cat": "frutas",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Melon": {
    "variedades": [
@@ -678,7 +716,8 @@ const PRECIOS = {
    "mayorista": 1.81,
    "cat": "frutas",
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Membrillo": {
    "variedades": [
@@ -694,7 +733,8 @@ const PRECIOS = {
    "mayorista": 3.65,
    "cat": "frutas",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Naranja": {
    "variedades": [
@@ -730,7 +770,8 @@ const PRECIOS = {
    "mayorista": 0.94,
    "cat": "frutas",
    "mercado": 2.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Palta": {
    "variedades": [
@@ -767,7 +808,8 @@ const PRECIOS = {
    "cat": "frutas",
    "super": 9.49,
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Papaya": {
    "variedades": [
@@ -779,7 +821,8 @@ const PRECIOS = {
    "mayorista": 1.94,
    "cat": "frutas",
    "mercado": 4.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Piña": {
    "variedades": [
@@ -800,7 +843,8 @@ const PRECIOS = {
    "cat": "frutas",
    "super": 5.29,
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Platano": {
    "variedades": [
@@ -840,7 +884,8 @@ const PRECIOS = {
    "mayorista": 1.33,
    "cat": "frutas",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Sandia": {
    "variedades": [
@@ -852,7 +897,8 @@ const PRECIOS = {
    "mayorista": 1.15,
    "cat": "frutas",
    "mercado": 3.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Tuna": {
    "variedades": [
@@ -872,7 +918,8 @@ const PRECIOS = {
    "mayorista": 4.1,
    "cat": "frutas",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Uva": {
    "variedades": [
@@ -920,7 +967,8 @@ const PRECIOS = {
    "mayorista": 3.7,
    "cat": "frutas",
    "mercado": 12.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Pollo": {
    "variedades": [
@@ -933,217 +981,248 @@ const PRECIOS = {
    "cat": "proteina",
    "super": 14.0,
    "mercado": 9.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Arroz": {
    "variedades": [],
    "mayorista": 2.8,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 4.2,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.5
   },
   "Fideos": {
    "variedades": [],
    "mayorista": 4.0,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.5
   },
   "Azucar Comercial": {
    "variedades": [],
    "mayorista": 2.67,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 4.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.5
   },
   "Lenteja Grano Seco": {
    "variedades": [],
    "mayorista": 4.67,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Frijol Grano Seco": {
    "variedades": [],
    "mayorista": 6.0,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 9.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Leche": {
    "variedades": [],
    "mayorista": 3.0,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 4.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 1.0
   },
   "Aceite": {
    "variedades": [],
    "mayorista": 7.04,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 10.56,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.9
   },
   "Carne De Res": {
    "variedades": [],
    "mayorista": 21.33,
    "cat": "proteina",
    "mercado": 32.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Carne De Res Lomo": {
    "variedades": [],
    "mayorista": 25.33,
    "cat": "proteina",
    "mercado": 38.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Carne De Cerdo": {
    "variedades": [],
    "mayorista": 22.67,
    "cat": "proteina",
    "mercado": 34.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Pescado Bonito": {
    "variedades": [],
    "mayorista": 8.0,
    "cat": "proteina",
    "mercado": 12.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Queso Fresco": {
    "variedades": [],
    "mayorista": 25.33,
    "cat": "otros",
    "mercado": 38.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.2
   },
   "Papa Amarilla": {
    "variedades": [],
    "mayorista": 2.33,
-   "cat": "otros",
+   "cat": "verduras",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Papa Huayro": {
    "variedades": [],
    "mayorista": 2.33,
-   "cat": "otros",
+   "cat": "verduras",
    "mercado": 3.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.1
   },
   "Huevos": {
    "variedades": [],
    "mayorista": 5.0,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 7.5,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.06
   },
   "Garbanzo Grano Seco": {
    "variedades": [],
    "mayorista": 6.0,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 9.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Pallar Grano Seco": {
    "variedades": [],
    "mayorista": 5.33,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Frijol Negro": {
    "variedades": [],
    "mayorista": 4.67,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Arveja Partida": {
    "variedades": [],
    "mayorista": 4.67,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Trigo": {
    "variedades": [],
    "mayorista": 4.0,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Moron": {
    "variedades": [],
    "mayorista": 4.0,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 6.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Chuno": {
    "variedades": [],
    "mayorista": 4.67,
-   "cat": "otros",
+   "cat": "granos",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Pota": {
    "variedades": [],
    "mayorista": 4.67,
-   "cat": "otros",
+   "cat": "proteina",
    "mercado": 7.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Pejerrey": {
    "variedades": [],
    "mayorista": 8.0,
-   "cat": "otros",
+   "cat": "proteina",
    "mercado": 12.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Caballa": {
    "variedades": [],
    "mayorista": 8.0,
-   "cat": "otros",
+   "cat": "proteina",
    "mercado": 12.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.25
   },
   "Harina": {
    "variedades": [],
    "mayorista": 5.33,
-   "cat": "otros",
+   "cat": "abarrotes",
    "mercado": 8.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.15
   },
   "Avena": {
    "variedades": [],
    "mayorista": 5.78,
    "cat": "otros",
    "mercado": 8.67,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.15
   },
   "Mantequilla": {
    "variedades": [],
    "mayorista": 44.45,
    "cat": "otros",
    "mercado": 66.67,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.18
   },
   "Margarina": {
    "variedades": [],
    "mayorista": 22.22,
    "cat": "otros",
    "mercado": 33.33,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.045
   },
   "Atun": {
    "variedades": [],
    "mayorista": 3.33,
-   "cat": "otros",
+   "cat": "proteina",
    "mercado": 5.0,
-   "fuente": "mercado"
+   "fuente": "mercado",
+   "min": 0.17
   }
  }
 };

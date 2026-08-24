@@ -350,7 +350,17 @@ def ver_ingredientes(imagen_b64, catalogo, mime="image/jpeg"):
 DIFICULTADES = {
     "facil": "facil: olla y sarten, hasta 30 min, tecnicas basicas",
     "media": "intermedia: aderezo bien hecho, licuadora, 30-50 min",
-    "complicado": "elaborada: varias etapas o coccion larga, 50-90 min",
+    # Si pide complicado es porque quiere cocinar en serio. Bajarle el nivel
+    # "por si acaso" es subestimarlo.
+    "complicado": (
+        "ELABORADA de verdad, 50-120 min. Aca no le bajes el nivel: quiere "
+        "cocinar en serio. Varias etapas, fondos o caldos hechos aparte, "
+        "marinados, masas, frituras en dos tiempos, emulsiones. Platos como "
+        "chupe de camarones, parihuela, carapulcra con sopa seca, adobo "
+        "arequipeno, wantanes armados a mano, arroz con pato, cau cau de "
+        "mariscos, pepian de choclo, causa en capas, escabeche completo. "
+        "Dale tecnica y explicasela bien"
+    ),
 }
 
 
@@ -371,9 +381,23 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None,
     hay que comprarlas.
     """
     catalogo = sorted(precios.keys())
-    lista_precios = "\n".join(
-        "  %s: S/ %.2f por kg" % (k, precios[k]) for k in catalogo
-    )
+
+    def _linea(k):
+        p = precios[k]
+        if isinstance(p, dict):          # {"precio": x, "min": y}
+            m = p.get("min") or 0
+            p = p["precio"]
+            if m and m >= 0.2:
+                # Sin esto el modelo elegia platos que "cuestan poco" pero que
+                # obligan a comprar la botella entera y revientan el bolsillo.
+                return ("  %s: S/ %.2f por kg. OJO: lo minimo que venden son "
+                        "%d g, o sea S/ %.2f aunque uses menos"
+                        % (k, p, round(m * 1000), p * m))
+        return "  %s: S/ %.2f por kg" % (k, p)
+
+    lista_precios = "\n".join(_linea(k) for k in catalogo)
+    precios = {k: (v["precio"] if isinstance(v, dict) else v)
+               for k, v in precios.items()}
     tiene = ", ".join(tengo) if tengo else "nada en particular"
     evitar = [str(x) for x in (evitar or [])][-24:]
     sin_precio = [str(x)[:40] for x in (sin_precio or [])][:12]
@@ -384,19 +408,45 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None,
         "Lo que la persona ya tiene: %s\n"
         "%s"
         "Dificultad pedida: %s\n"
-        "Puede gastar como maximo: S/ %s en lo que le falte comprar\n\n"
+        "%s\n"
         "Precios reales por kilo (usalos para no pasarte del presupuesto):\n%s\n\n"
         "REGLAS:\n"
         "1. En 'ing' usa SOLO nombres EXACTOS de esa lista de precios, con la "
         "cantidad en KILOS (numero decimal) para %d porcion(es).\n"
-        "2. Prioriza platos que aprovechen lo que ya tiene.\n"
+        "2. Prioriza platos que aprovechen lo que ya tiene. Y cuidado con el "
+        "presupuesto: si un ingrediente tiene minimo de compra, cuenta el "
+        "MINIMO, no lo que usas. Pedir 50 g de aceite cuando la botella "
+        "cuesta S/9.50 le rompe el bolsillo. Si ya tiene el aceite en casa, "
+        "no hay problema: usalo tranquilo.\n"
         "3. Cocina de casa: olla, sarten, horno comun. NADA de pachamanca, "
         "parrilla, horno de barro, ni cosas que pidan equipo especial o "
         "ingredientes raros o caros.\n"
-        "4. Platos reales y comunes en Peru, economicos y del dia a dia.\n"
-        "5. Si el plato necesita algo que no esta en la lista de precios "
-        "(carne de res, sillao, queso, especias), ponlo en 'extra' como texto.\n"
-        "6. Varia: no repitas la misma base en los %d platos.\n"
+        "4. La cocina peruana es MUCHO mas ancha que lomo saltado y aji de "
+        "gallina. No te quedes en los cinco platos de siempre. Acuerdate de:\n"
+        "   - SOPAS: menestron, sopa criolla, aguadito, chupe de camarones, "
+        "chupe verde, sopa a la minuta, caldo de gallina, parihuela, "
+        "sopa seca, dieta de pollo.\n"
+        "   - CHIFA: sopa wantan, arroz chaufa, tallarin saltado, wantan "
+        "frito, chi jau kay, pollo enrollado, aeropuerto.\n"
+        "   - NIKKEI Y ASIATICO DE BARRIO: ajinomen levantado con huevo "
+        "escalfado, verduras y un chorrito de sillao (barato y sorprende), "
+        "tortilla japonesa enrollada estilo tamagoyaki, ramen casero con "
+        "caldo de pollo de verdad, gyozas de lo que haya, tiradito, arroz "
+        "con kion, pollo al sillao, yakimeshi.\n"
+        "   - MARINA: sudado, escabeche de pescado, jalea, arroz con mariscos, "
+        "leche de tigre, ceviche, chicharron de pescado, picante de mariscos.\n"
+        "   - CRIOLLO MENOS OBVIO: cau cau, patita con mani, olluquito, "
+        "carapulcra, adobo, sancochado, tacu tacu, solterito, locro, "
+        "pepian de choclo, arroz tapado, tortilla de verduras.\n"
+        "5. Si el plato necesita algo que no esta en la lista de precios, "
+        "ponlo en 'extra' como texto. Eso incluye sillao, kion, masa de "
+        "wantan, fideo de ajinomen, aceite de ajonjoli, nori, mani, queso, "
+        "carne, especias. No dejes de proponer un plato solo porque su "
+        "ingrediente estrella no esta en la lista de precios: para eso existe "
+        "'extra'.\n"
+        "6. Los %d platos tienen que venir de FAMILIAS DISTINTAS. Reparte: "
+        "una sopa o caldo, uno de chifa o asiatico, uno marino, y uno criollo "
+        "o guiso. Cuatro guisos criollos seguidos es un menu aburrido.\n"
         "7. 'kcal' son las calorias aproximadas POR PORCION. No te pases de "
         "listo: un estimado razonable basta.\n"
         "8. 'nutri' es media frase sobre el plato desde lo nutricional, en "
@@ -415,7 +465,18 @@ def sugerir_recetas(tengo, dificultad, presupuesto, precios, n=4, evitar=None,
             "(ya es suyo, no lo tiene que comprar): %s\n" % ", ".join(sin_precio))
            if sin_precio else "",
            DIFICULTADES.get(dificultad, dificultad),
-           presupuesto, lista_precios, porciones, n,
+           # Presupuesto cero es cero: ni sal, ni un limon, ni un paquetito de
+           # comino. Antes igual mandaba a comprar "cositas baratas".
+           ("NO TIENE PLATA. Cero soles, ni una moneda. Los platos tienen que "
+            "salir SOLO con lo que ya tiene arriba, nada mas. No mandes a "
+            "comprar NADA: ni sal, ni condimentos, ni un limon, ni 'algo "
+            "barato'. Si con lo que hay solo alcanza para algo simple, ofrece "
+            "algo simple bien hecho, pero no lo mandes a la tienda. Deja "
+            "'extra' vacio, o solo con cosas que cualquiera tiene en casa "
+            "como sal y agua." if str(presupuesto) in ("0", "0.0")
+            else "Puede gastar como maximo: S/ %s en lo que le falte comprar"
+                 % presupuesto),
+           lista_precios, porciones, n,
            ("9. YA LE PROPUSISTE ESTOS, no los repitas ni les cambies el "
             "nombre para colarlos: %s\n   Dale platos claramente distintos.\n"
             % ", ".join(evitar)) if evitar else "")

@@ -42,8 +42,14 @@ def catalogo():
 
 
 def precios_mercado():
-    """Precio por kilo estimado de mercado de barrio, por producto."""
-    return {k: v["mercado"] for k, v in _precios().items()}
+    """Precio por kilo y minimo de compra, por producto.
+
+    El minimo importa tanto como el precio: si la receta pide 50 g de aceite
+    pero la botella cuesta S/9.50, el modelo tiene que saberlo antes de
+    proponer el plato.
+    """
+    return {k: {"precio": v["mercado"], "min": v.get("min", 0.1)}
+            for k, v in _precios().items()}
 
 
 def ip_local():
@@ -141,7 +147,7 @@ class App(http.server.SimpleHTTPRequestHandler):
                 precios = precios_mercado()
                 # los extras vienen de la foto (queso, pan...) con precio real
                 for k, v in (datos.get("extras") or {}).items():
-                    precios[k] = float(v)
+                    precios[k] = {"precio": float(v), "min": 0.1}
                 # Lo que ya vio: si pide otras, el cache no aplica y ademas
                 # le decimos al modelo que no repita.
                 evitar = datos.get("evitar") or []

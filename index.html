@@ -207,6 +207,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .pcosto b{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.03em;
   display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pcosto span{font-size:11px;color:var(--gris);display:block;margin-top:1px}
+.pcosto .queda{color:var(--ok);font-weight:600;margin-top:3px;max-width:104px;
+  margin-left:auto;line-height:1.25;white-space:normal}
 .pcosto.pasa b{color:var(--mal)}
 /* corazon: guardar un plato para volver aunque cambies los filtros */
 .like{margin:8px 0 0 auto;width:38px;height:38px;display:grid;place-items:center;
@@ -240,6 +242,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .ing.hay{color:var(--gris)}
 .ing.hay .pt{background:var(--ok)}
 .ing .val{font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ing .sobra{font-style:normal;font-size:11.5px;color:var(--gris);opacity:.85}
 .falta{color:var(--gris);font-size:12.5px;margin-top:10px;font-style:italic}
 .bcomo{width:100%;margin-top:14px;padding:13px;border-radius:12px;background:var(--aji);
   border:0;font-family:var(--ui);font-size:14.5px;font-weight:700;color:var(--tinta);
@@ -773,20 +776,38 @@ async function pedirRecetas(otras) {
   marcarOcupado(false);
 }
 
-function costear(r) {
-  let falta = 0, total = 0, det = [];
-  for (const [n, kg] of Object.entries(r.ing)) {
-    const p = precio(n); if (p === null) continue;
-    const c = p * kg; total += c;
-    const hay = tengo.has(n);
-    if (!hay) falta += c;
-    det.push({n, kg, c, hay});
-  }
-  det.sort((a,b) => b.c - a.c);
-  return {...r, falta, total, det};
+/* Cuanto tienes que COMPRAR de verdad. Si la receta pide 100 g de lentejas
+   pero el mínimo son 250 g, pagas 250 g. Cobrar el proporcional era mentira:
+   por eso salían cosas como leche a S/2.20. */
+function aComprar(n, kg) {
+  const m = (PRECIOS.productos[n] || {}).min || 0.05;
+  return Math.max(m, Math.ceil((kg - 1e-9) / m) * m);
 }
 
-const guardado = nom => guardados.some(g => g.nombre === nom);
+function costear(r) {
+  let falta = 0, total = 0, guarda = 0, det = [];
+  for (const [n, kg] of Object.entries(r.ing)) {
+    const p = precio(n); if (p === null) continue;
+    const hay = tengo.has(n);
+    // lo que usas cuenta para el plato; lo que compras, para tu bolsillo
+    const kgc = hay ? kg : aComprar(n, kg);
+    const c = p * kgc;
+    total += p * kg;
+    if (!hay) {
+      falta += c;
+      // La botella de aceite no es costo de ESTE plato: es despensa que te
+      // dura. Se cobra completa igual, pero se dice cuanto de eso te queda.
+      guarda += p * (kgc - kg);
+    }
+    det.push({n, kg, kgc, c, hay, sobra: !hay && kgc > kg + 1e-6});
+  }
+  det.sort((a,b) => b.c - a.c);
+  return {...r, falta, total, guarda, det};
+}
+
+const guardado = nom => guardados.some(x => x.nombre === nom);
+// gramos o kilos, lo que se lea mejor
+const g = kg => kg >= 1 ? (+kg.toFixed(2)) + " kg" : Math.round(kg*1000) + " g";
 
 /* La misma tarjeta sirve para los resultados y para los guardados. El `pre`
    distingue los ids ("g" para guardados) porque las dos listas conviven. */
@@ -807,6 +828,8 @@ function tarjeta(r, k, pre) {
           <div class="pcosto ${r.falta>tope?"pasa":""}">
             <b>S/ ${r.falta.toFixed(2)}</b>
             <span>${r.falta>tope ? "pasa tu tope" : "te falta comprar"}</span>
+            ${r.guarda > 1 ? `<span class="queda">S/ ${r.guarda.toFixed(2)}
+              te queda en la despensa</span>` : ""}
           </div>
           <button class="like ${guardado(r.nombre)?"on":""}" data-nom="${r.nombre}"
                   aria-label="Guardar este plato">
@@ -816,7 +839,9 @@ function tarjeta(r, k, pre) {
       </div>
       <div class="ings">
         ${r.det.map(d => `<div class="ing ${d.hay?"hay":""}">
-          <div class="izq"><i class="pt"></i><span>${d.n}</span></div>
+          <div class="izq"><i class="pt"></i><span>${d.n}${
+            d.sobra ? ` <em class="sobra">usas ${g(d.kg)}, compras ${g(d.kgc)}</em>` : ""
+          }</span></div>
           <div class="val">${d.hay ? "lo tienes" : "S/ "+d.c.toFixed(2)}</div></div>`).join("")}
         ${r.extra?.length ? `<div class="falta">Además necesitas: ${r.extra.join(", ")}</div>` : ""}
       </div>
